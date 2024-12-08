@@ -6,22 +6,19 @@ import { TRANSFER_COMPO } from '@/settings/websiteSetting'
 import { mockData, treeData, transferDataSource } from './data'
 
 const TransferPage: React.FC = () => {
-  // 强制将 targetKeys 和 selectedKeys 设置为 string[] 类型
-  const [targetKeys, setTargetKeys] = useState<string[]>(['1', '5'])  // 这里使用 string[]
-  const [selectedKeys, setSelectedKeys] = useState<string[]>(['2', '6'])  // 这里使用 string[]
-  const [treeTargetKeys, setTreeTargetKeys] = useState<string[]>([])  // 这里使用 string[]
+  const [targetKeys, setTargetKeys] = useState(['1', '5'])
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(['2', '6'])
+  const [treeTargetKeys, setTreeTargetKeys] = useState<string[]>([])
 
-  // 处理类型为 string[] 的 onChange 方法
   const onChange = (nextTargetKeys: string[]) => {
     setTargetKeys(nextTargetKeys)
   }
 
-  // 处理类型为 string[] 的 onSelectChange 方法
   const onSelectChange = (sourceSelectedKeys: string[], targetSelectedKeys: string[]) => {
     setSelectedKeys([...sourceSelectedKeys, ...targetSelectedKeys])
   }
 
-  const isChecked = (selectedKeys: string[], eventKey: string) => selectedKeys.includes(eventKey)
+  const isChecked = (selectedKeys: (string | number)[], eventKey: string | number) => selectedKeys.includes(eventKey)
 
   const generateTree = (treeNodes: DataNode[] = [], checkedKeys: string[] = []): DataNode[] =>
     treeNodes.map(({ children, ...props }) => ({
@@ -112,7 +109,7 @@ const TransferPage: React.FC = () => {
                   rowSelection={getRowSelection({ selectedKeys, onItemSelectAll, onItemSelect })}
                   columns={[{ dataIndex: 'title', title: 'Name' }]}
                   dataSource={filteredItems}
-                  size="small"
+                  size='small'
                   pagination={false}
                   onRow={({ key }) => ({
                     onClick: () => {
