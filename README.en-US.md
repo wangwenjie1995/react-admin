@@ -1,7 +1,4 @@
 <p align="center">
-  <img width="420" src="https://cdn.jsdelivr.net/gh/baimingxuan/media-store/images/logo-r-md.png">
-</p>
-<p align="center">
   <a href="https://github.com/facebook/react">
     <img src="https://img.shields.io/badge/react-18.2.0-brightgreen.svg" alt="react">
   </a>
@@ -40,18 +37,14 @@
 
 ## Preview
 
-> ##### Preview Site：[https://baimingxuan.github.io/react-admin-design/](https://baimingxuan.github.io/react-admin-design/)
+> ##### Preview Site：[http://www.bigoc.cn/](http://www.bigoc.cn/)
 >
-> ##### Github Site：[https://github.com/baimingxuan/react-admin-design](https://github.com/baimingxuan/react-admin-design)
->
-
-![](https://cdn.jsdelivr.net/gh/baimingxuan/media-store/images/home-vue3.png)
 
 ## Development
 
 ```bash
 // clone
-git clone https://github.com/baimingxuan/react-admin-design.git
+git clone https://github.com/wangwenjie1995/react-admin.git
 
 // install
 pnpm install

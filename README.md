@@ -1,7 +1,4 @@
 <p align="center">
-  <img width="420" src="https://cdn.jsdelivr.net/gh/baimingxuan/media-store/images/logo-r-md.png">
-</p>
-<p align="center">
   <a href="https://github.com/facebook/react">
     <img src="https://img.shields.io/badge/react-18.2.0-brightgreen.svg" alt="react">
   </a>
@@ -29,7 +26,7 @@
 
 ## 简介
 
-#### react-admin-design是一个基于react18 + ant-design5的后台管理系统的解决方案，它使用了最新的前端技术栈，并且提供了丰富的功能组件模块，可以帮助你快速搭建企业级中后台的前端架构。
+#### react-admin是一个基于react18 + ant-design5的后台管理系统的解决方案，它使用了最新的前端技术栈，并且提供了丰富的功能组件模块，可以帮助你快速搭建企业级中后台的前端架构。
 
 ## 特性
 
@@ -40,18 +37,14 @@
 
 ## 预览
 
-> ##### 演示地址：[https://baimingxuan.github.io/react-admin-design/](https://baimingxuan.github.io/react-admin-design/)
+> ##### 演示地址：[https://www.bigoc.cn](https://www.bigoc.cn)
 >
-> ##### Github地址：[https://github.com/baimingxuan/react-admin-design](https://github.com/baimingxuan/react-admin-design)
->
-
-![](https://cdn.jsdelivr.net/gh/baimingxuan/media-store/images/home-vue3.png)
 
 ## 开发
 
 ```bash
 // 克隆项目
-git clone https://github.com/baimingxuan/react-admin-design.git
+git clone https://github.com/wangwenjie1995/react-admin.git
 
 // 安装依赖
 pnpm install

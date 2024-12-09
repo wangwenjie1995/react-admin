@@ -1,11 +1,10 @@
 {
-  "name": "react-admin-design",
+  "name": "bigoc",
   "version": "1.0.0",
   "type": "module",
   "author": {
-    "name": "baimingxuan",
-    "email": "354372738@qq.com",
-    "url": "https://github.com/baimingxuan"
+    "name": "bigoc",
+    "email": "970548393@qq.com"
   },
   "scripts": {
     "serve": "vite",
@@ -113,14 +112,6 @@
     "react-admin-design"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/baimingxuan/react-admin-design",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/baimingxuan/react-admin-design.git"
-  },
-  "bugs": {
-    "url": "https://github.com/baimingxuan/react-admin-design/issues"
-  },
   "engines": {
     "node": ">=16",
     "pnpm": ">=8"
