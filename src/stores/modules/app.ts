@@ -2,12 +2,14 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { AppState } from '../types'
 import { Persistent } from '@/utils/cache/persistent'
 import { APP_CONFIG_KEY } from '@/enums/cacheEnum'
+import { LanguageEnum } from '@/enums/appEnum'
 import { deepMerge } from '@/utils'
 
 const initialState: AppState = {
   appMode: undefined,
   themeMode: undefined,
-  appConfig: Persistent.getLocal(APP_CONFIG_KEY)
+  appConfig: Persistent.getLocal(APP_CONFIG_KEY),
+  language: LanguageEnum.ZH
 }
 
 const app = createSlice({
@@ -29,10 +31,13 @@ const app = createSlice({
       state.themeMode = undefined
       state.appConfig = null
       Persistent.clearAll()
+    },
+    setLanguage: (state, action) => {
+      state.language = action.payload
     }
   }
 })
 
-export const { setAppMode, setThemeMode, setAppConfig, resetState } = app.actions
+export const { setAppMode, setThemeMode, setAppConfig, resetState, setLanguage } = app.actions
 
 export default app.reducer

@@ -1,4 +1,5 @@
 import { isObject } from './is'
+import { LanguageEnum } from '@/enums/appEnum'
 
 export function openWindow(
   url: string,
@@ -41,4 +42,17 @@ export function deepMerge<T = any>(src: any = {}, target: any = {}): T {
     src[key] = isObject(src[key]) ? deepMerge(src[key], target[key]) : (src[key] = target[key])
   }
   return src
+}
+
+export const getBrowserLang = () => {
+  let browserLang = navigator.language;
+  let defaultBrowserLang
+  if (browserLang.toLowerCase() === 'cn' ||
+    browserLang.toLowerCase() === 'zh' ||
+    browserLang.toLowerCase() === 'zh-cn') {
+    defaultBrowserLang = LanguageEnum.ZH
+  } else {
+    defaultBrowserLang = LanguageEnum.EN
+  }
+  return defaultBrowserLang
 }

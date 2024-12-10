@@ -26,7 +26,7 @@ export default function UserDropdown() {
       label: (
         <Space size={4}>
           <PoweroffOutlined rev={undefined} />
-          <span>退出登录?</span>
+          <span>退出登录</span>
         </Space>
       )
     }

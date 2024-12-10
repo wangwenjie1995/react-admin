@@ -31,11 +31,12 @@ export function transformRouteToMenu(routes: RouteObject[]) {
 
   const list = treeMap(routeList, {
     conversion: (node: RouteObject) => {
-      const { meta: { title, hideMenu = false, ...rest } = {} } = node
+      const { meta: { title, tKey, hideMenu = false, ...rest } = {} } = node
 
       return {
         ...(rest || {}),
         name: title,
+        tKey,
         hideMenu,
         path: node.path
       }

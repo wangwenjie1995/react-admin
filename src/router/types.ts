@@ -3,6 +3,7 @@ import type { LoaderFunction } from 'react-router-dom'
 
 export interface MetaProps {
   title: string
+  tKey?: string
   key?: string
   icon?: string
   affix?: boolean

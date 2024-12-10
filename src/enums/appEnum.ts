@@ -30,3 +30,8 @@ export enum PermissionModeEnum {
   // The back-end response
   BACKEND = 'BACKEND'
 }
+
+export enum LanguageEnum {
+  ZH = 'zh',
+  EN = 'en'
+}

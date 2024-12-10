@@ -175,5 +175,5 @@ export const FLOW_EDITOR_PLUGIN = {
 export const RESULT_COMPO = {
   name: 'Result结果',
   url: 'https://ant-design.antgroup.com/components/result-cn',
-  desc: 'ant-design-result: 使用 ant-design 的 result 组件, 可用于反馈一系列操作任务的处理结果。'
+  desc: '使用 ant-design 的 result 组件, 可用于反馈一系列操作任务的处理结果。'
 }

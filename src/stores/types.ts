@@ -1,5 +1,6 @@
 import type { AppConfig } from '@/types/config'
-import type { AppModeEnum, ThemeEnum } from '@/enums/appEnum'
+import type { AppModeEnum, ThemeEnum, LanguageEnum } from '@/enums/appEnum'
+
 import type { RouteObject } from '@/router/types'
 
 export interface UserInfo {
@@ -43,5 +44,7 @@ export interface AppState {
 
   themeMode?: ThemeEnum
 
-  appConfig: AppConfig | null
+  appConfig: AppConfig | null,
+
+  language: LanguageEnum
 }

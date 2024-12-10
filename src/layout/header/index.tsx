@@ -1,8 +1,10 @@
 import { Layout } from 'antd'
 import { Breadcrumb, FoldTrigger } from './components'
 import LayoutFeature from '../feature'
+import { useTranslation } from 'react-i18next'
 
 const LayoutHeader = () => {
+  const { t } = useTranslation()
   const { Header } = Layout
 
   return (

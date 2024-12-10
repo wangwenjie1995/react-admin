@@ -118,7 +118,8 @@ export default defineFlatConfig([
         {
           allowBitwiseExpressions: true
         }
-      ]
+      ],
+      // "react/no-inline-styles": "off"
     }
   },
   {
