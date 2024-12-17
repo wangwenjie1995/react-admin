@@ -1,0 +1,60 @@
+.canvas-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+}
+
+.canvas-tools {
+  padding: 5px 1.5rem;
+  border: 1px solid #e4e7ed;
+  position: relative;
+  padding-right: 30px;
+}
+
+.canvas-body {
+  border: 1px solid #e4e7ed;
+  flex-grow: 1;
+  flex-direction: column;
+  display: flex;
+  height: 0;
+}
+
+.canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.main-canvas {
+  z-index: 1;
+  cursor: crosshair;
+}
+
+.img-canvas {
+  z-index: 0;
+  pointer-events: none;
+  /* 防止 canvas 上的操作影响到其他内容 */
+}
+
+.save-canvas {
+  z-index: -1;
+  pointer-events: none;
+  /* 防止 canvas 上的操作影响到其他内容 */
+}
+
+.active-btn {
+  color: #fff;
+  background-color: orangered;
+  border-color: orangered;
+}
+
+.default-btn {}

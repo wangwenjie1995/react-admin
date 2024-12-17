@@ -1,3 +1,4 @@
+import { remove } from 'lodash-es'
 import { isObject } from './is'
 import { LanguageEnum } from '@/enums/appEnum'
 
@@ -55,4 +56,65 @@ export const getBrowserLang = () => {
     defaultBrowserLang = LanguageEnum.EN
   }
   return defaultBrowserLang
+}
+
+export const onMove = (callback: (event: MouseEvent) => void, removeCallback?: () => void) => {
+  // 鼠标移动事件处理函数
+  const moveEvent = (event: MouseEvent) => {
+    // 如果鼠标左键未按下，移除所有事件监听
+    if (event.buttons !== 1) {
+      remove()
+      return
+    }
+    callback(event) // 执行移动时的逻辑
+  }
+  const remove = () => {
+    window.removeEventListener('mousemove', moveEvent)
+    window.removeEventListener('mouseup', remove)
+    window.removeEventListener('contextmenu', remove)
+    removeCallback?.()
+  }
+  window.addEventListener('mousemove', moveEvent)
+  window.addEventListener('contextmenu', remove) // 右键菜单触发时清理
+  window.addEventListener('mouseup', remove) // 鼠标抬起时清理
+  // 返回手动移除事件监听的函数
+  return remove
+}
+
+export const onMoveRequestAnimation = (callback: (event: MouseEvent) => void, removeCallback?: () => void) => {
+  let isMoving = false //是否在移动
+  let lastEvent: MouseEvent | null = null //存储最近的鼠标事件
+  let animationFrameId: number | null = null //用于取消requestAnimationFrame
+
+  const moveEvent = (event: MouseEvent) => {
+    if (event.buttons !== 1) {
+      remove() // 鼠标左键未按下时清理事件
+      return
+    }
+    lastEvent = event //保存最新的鼠标事件
+    isMoving = true //标记正在移动
+  }
+  const loop = () => {
+    if (isMoving && lastEvent) {
+      callback(lastEvent) //处理最新的鼠标事件
+      isMoving = false; // 重置标记
+    }
+    animationFrameId = requestAnimationFrame(loop) //循环监听
+  }
+  const remove = () => {
+    window.removeEventListener("mousemove", moveEvent);
+    window.removeEventListener("mouseup", remove);
+    window.removeEventListener("contextmenu", remove);
+    if (animationFrameId !== null) {
+      cancelAnimationFrame(animationFrameId); // 取消帧循环
+      animationFrameId = null;
+    }
+    removeCallback?.();
+  }
+  window.addEventListener("mousemove", moveEvent);
+  window.addEventListener("mouseup", remove); // 鼠标抬起时清理
+  window.addEventListener("contextmenu", remove); // 右键菜单触发时清理
+  //启动帧循环
+  animationFrameId = requestAnimationFrame(loop)
+  return remove //返回清理函数
 }
