@@ -1,1 +1,0 @@
-import{r as n,cT as t,cU as o}from"./index-2823d128.js";function e(e){var r=n.useState((function(){return t("function"==typeof e?e():e,!0)})),u=r[1];return[r[0],n.useCallback((function(n){u("function"==typeof n?o(n):t(n))}),[])]}export{e as i};
