@@ -15,6 +15,15 @@ const ExcelRoute: RouteObject = {
   },
   children: [
     {
+      path: 'handsontable',
+      name: 'Handsontable',
+      element: LazyLoad(lazy(() => import('@/views/excel/handsontable/index'))),
+      meta: {
+        title: 'Handsontable',
+        key: 'handsontable'
+      }
+    },
+    {
       path: 'export-excel',
       name: 'ExportExcel',
       element: LazyLoad(lazy(() => import('@/views/excel/export-excel'))),

@@ -1,1 +1,0 @@
-import{r as n,cU as t,cV as o}from"./index-d3162a1e.js";function e(e){var r=n.useState((function(){return t("function"==typeof e?e():e,!0)})),u=r[1];return[r[0],n.useCallback((function(n){u("function"==typeof n?o(n):t(n))}),[])]}export{e as i};
