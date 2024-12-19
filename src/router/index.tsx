@@ -1,5 +1,5 @@
 import type { RouteObject } from './types'
-import { Navigate, createHashRouter, redirect } from 'react-router-dom'
+import { Navigate, createHashRouter, redirect, createBrowserRouter } from 'react-router-dom'
 import { genFullPath } from './helpers'
 import { ExceptionEnum } from '@/enums/exceptionEnum'
 import { getAuthCache } from '@/utils/auth'
@@ -61,4 +61,4 @@ const rootRoutes: RouteObject[] = [
 
 export { routeList as basicRoutes }
 
-export default createHashRouter(rootRoutes)
+export default createBrowserRouter(rootRoutes)
