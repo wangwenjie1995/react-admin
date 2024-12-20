@@ -7,18 +7,21 @@ import {
   type USER_INFO_KEY,
   type APP_CONFIG_KEY,
   type APP_TAGS_KEY,
+  type PERMISSIONS,
   APP_LOCAL_CACHE_KEY,
   APP_SESSION_CACHE_KEY
 } from '@/enums/cacheEnum'
 import { createLocalStorage, createSessionStorage } from '@/utils/cache'
 import { DEFAULT_CACHE_TIME } from '@/settings/encryptionSetting'
 import type { UserInfo } from '@/types'
+import { Permission } from '@/stores/types'
 
 interface BasicStore {
   [TOKEN_KEY]: string | number | null | undefined
   [USER_INFO_KEY]: UserInfo
   [APP_CONFIG_KEY]: AppConfig
   [APP_TAGS_KEY]: RouteObject[]
+  [PERMISSIONS]: Permission[]
 }
 
 type LocalStore = BasicStore
@@ -76,11 +79,13 @@ export class Persistent {
   }
 
   static clearSession(immediate = false): void {
+    console.log('clearSession')
     sessionMemory.clear()
     immediate && ss.clear()
   }
 
   static clearAll(immediate = false) {
+    console.log('clearAll')
     sessionMemory.clear()
     localMemory.clear()
     if (immediate) {

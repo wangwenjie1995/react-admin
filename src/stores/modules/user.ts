@@ -1,13 +1,14 @@
 import type { UserState } from '@/stores/types'
 import { createSlice } from '@reduxjs/toolkit'
-import { TOKEN_KEY, USER_INFO_KEY } from '@/enums/cacheEnum'
+import { TOKEN_KEY, USER_INFO_KEY, PERMISSIONS } from '@/enums/cacheEnum'
 import { setAuthCache } from '@/utils/auth'
 
 const initialState: UserState = {
   userInfo: null,
   token: undefined,
   sessionTimeout: false,
-  lastUpdateTime: 0
+  lastUpdateTime: 0,
+  permissions: []
 }
 
 const user = createSlice({
@@ -23,6 +24,10 @@ const user = createSlice({
       state.lastUpdateTime = new Date().getTime()
       setAuthCache(USER_INFO_KEY, action.payload)
     },
+    setPermissions: (state, action) => {
+      state.permissions = action.payload
+      setAuthCache(PERMISSIONS, action.payload)
+    },
     setSessionTimeout: (state, action) => {
       state.sessionTimeout = action.payload
     },
@@ -31,10 +36,11 @@ const user = createSlice({
       state.token = undefined
       state.sessionTimeout = false
       state.lastUpdateTime = 0
+      state.permissions = []
     }
   }
 })
 
-export const { setToken, setUserInfo, setSessionTimeout, resetState } = user.actions
+export const { setToken, setUserInfo, setPermissions, setSessionTimeout, resetState } = user.actions
 
 export default user.reducer

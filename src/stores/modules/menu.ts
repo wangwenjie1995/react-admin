@@ -11,6 +11,7 @@ const menu = createSlice({
   initialState,
   reducers: {
     setMenuList: (state, action) => {
+      console.log('setMenuList')
       state.menuList = action.payload
     },
     updateCollapse: (state, action) => {

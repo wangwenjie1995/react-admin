@@ -13,7 +13,6 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useFullscreen } from 'ahooks'
 import { TagItem } from './components'
-import { basicRoutes } from '@/router'
 import { useAppSelector, useAppDispatch } from '@/stores'
 import { addVisitedTags } from '@/stores/modules/tags'
 import { searchRoute } from '@/utils'
@@ -56,16 +55,16 @@ const LayoutTags: FC = () => {
   const dispatch = useAppDispatch()
 
   const [activeTag, setActiveTag] = useState(pathname)
-
+  const { permissions } = useAppSelector(state => state.user)
   useEffect(() => {
-    const affixTags = initAffixTags(basicRoutes)
+    const affixTags = initAffixTags(permissions)
     for (const tag of affixTags) {
       dispatch(addVisitedTags(tag))
     }
   }, [])
 
   useEffect(() => {
-    const currRoute = searchRoute(pathname, basicRoutes)
+    const currRoute = searchRoute(pathname, permissions)
     if (currRoute) {
       dispatch(addVisitedTags(currRoute))
     }
@@ -206,7 +205,7 @@ const LayoutTags: FC = () => {
           {visitedTags.map((item: RouteObject) => (
             <span key={item.fullPath} data-path={item.fullPath}>
               <TagItem
-                name={item.meta?.title!}
+                name={item.title!}
                 active={activeTag === item.fullPath}
                 fixed={item.meta?.affix}
                 onClick={() => handleClickTag(item.fullPath!)}

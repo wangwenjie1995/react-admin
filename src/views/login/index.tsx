@@ -4,13 +4,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Form, Input, Checkbox, Button, message } from 'antd'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import { useAppSelector, useAppDispatch } from '@/stores'
-import { setToken, setUserInfo, setSessionTimeout } from '@/stores/modules/user'
+import { setToken, setUserInfo, setPermissions, setSessionTimeout } from '@/stores/modules/user'
 import { getAuthCache } from '@/utils/auth'
 import { TOKEN_KEY } from '@/enums/cacheEnum'
 import { loginApi, getUserInfo } from '@/api'
 import logoIcon from '@/assets/images/logo_name.png'
 import classNames from 'classnames'
 import styles from './index.module.less'
+import { addFullPath } from '@/router/helpers'
 
 const LoginPage: FC = () => {
   const [form] = Form.useForm()
@@ -83,8 +84,9 @@ const LoginPage: FC = () => {
     if (!getToken()) return null
 
     const userInfo = await getUserInfo()
-
+    userInfo.permissions = addFullPath(userInfo.permissions)
     dispatch(setUserInfo(userInfo))
+    dispatch(setPermissions(userInfo.permissions))
 
     return userInfo
   }

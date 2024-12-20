@@ -1,6 +1,8 @@
 import { Persistent, type BasicKeys } from './cache/persistent'
 import { appSetting } from '@/settings/appBaseSetting'
 import { TOKEN_KEY, CacheTypeEnum } from '@/enums/cacheEnum'
+import { RouteObject } from '@/router/types'
+import { Permission } from '@/stores/types'
 
 const { permissionCacheType } = appSetting
 const isLocal = permissionCacheType === CacheTypeEnum.LOCAL
@@ -23,3 +25,4 @@ export function clearAuthCache(immediate = true) {
   const fn = isLocal ? Persistent.clearLocal : Persistent.clearSession
   return fn(immediate)
 }
+

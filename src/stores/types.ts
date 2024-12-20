@@ -11,13 +11,21 @@ export interface UserInfo {
   token: string
   desc?: string
   homePath?: string
+  permissions: Permission[]
 }
-
+export interface Permission {
+  path: string
+  name: string
+  title: string
+  tKey?: string
+  children?: Permission[]
+}
 export interface UserState {
   userInfo: Nullable<UserInfo>
   token?: string
   sessionTimeout?: boolean
   lastUpdateTime: number
+  permissions: Permission[]
 }
 
 export interface MenuOptions {

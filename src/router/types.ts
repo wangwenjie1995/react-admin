@@ -14,6 +14,7 @@ export interface MetaProps {
 }
 
 export interface RouteObject {
+  title?: string
   id?: string
   name?: string
   loader?: LoaderFunction
