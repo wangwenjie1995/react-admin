@@ -22,6 +22,18 @@ export function createFakeUserList() {
           }
         },
         {
+          "name": "Cesium",
+          "title": "Cesium",
+          "path": "/cesium",
+          "children": [
+            {
+              "name": "CesiumMap",
+              "path": "/cesium-map",
+              "title": "地球"
+            }
+          ]
+        },
+        {
           "name": "Compo",
           "title": "组件",
           "path": "/compo",

@@ -12,8 +12,10 @@ const AppLogo: FC = () => {
   return (
     <div className={classNames('anticon', styles['app-logo'])}>
       <Space>
+
         <img className={styles['logo-img']} src={logoImg} alt='logo' />
-        <div style={{ 'color': 'white', fontSize: '28px', marginLeft: '8px' }}>BIGOC</div>
+        <div style={{ 'color': 'white', fontSize: '28px', marginLeft: '8px' }}
+          className={classNames(styles['logo-name'], { [styles['hidden']]: getMenuFold })}>BIGOC</div>
       </Space >
     </div >
   )

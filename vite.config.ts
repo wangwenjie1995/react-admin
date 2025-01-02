@@ -1,6 +1,7 @@
 import type { ConfigEnv, UserConfig } from 'vite'
-import { loadEnv } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import cesium from 'vite-plugin-cesium'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import { viteMockServe } from 'vite-plugin-mock'
 import { wrapperEnv } from './build/utils'
@@ -8,7 +9,7 @@ import { wrapperEnv } from './build/utils'
 import { resolve } from 'path'
 
 /** @type {import('vite').UserConfig} */
-export default ({ command, mode }: ConfigEnv): UserConfig => {
+export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
   const root = process.cwd()
   const isBuild = command === 'build'
 
@@ -19,7 +20,9 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
   const { VITE_PORT, VITE_DROP_CONSOLE } = viteEnv
 
   return {
-    base: './',
+    // 开发环境： 确保本地开发中资源加载正常，通常使用 /。
+    // 生产环境： 为了兼容各种部署方式（根目录或子目录），通常使用相对路径 './'。
+    base: isBuild ? './' : '/', // 开发和生产的 base 路径
     server: {
       // Listening on all local ips
       host: true,
@@ -28,6 +31,9 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
     },
     plugins: [
       react(),
+      cesium({
+        removeCesiumLogo: true, // 自动移除 Cesium Logo
+      }),
       createSvgIconsPlugin({
         iconDirs: [resolve(process.cwd(), 'src/assets/icons')],
         symbolId: 'icon-[dir]-[name]'
@@ -65,4 +71,6 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       }
     }
   }
-}
+})
+
+

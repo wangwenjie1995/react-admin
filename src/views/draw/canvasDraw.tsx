@@ -292,7 +292,7 @@ const CanvasDraw: React.FC = () => {
               <Button onClick={onSave}>保存</Button>
             </Col>
           </Row>
-          <Row align="middle" gutter={8}>
+          <Row align="middle" gutter={8} style={{ marginTop: 10, marginBottom: 10 }}>
             <Col>
               <ColorPicker
                 onChange={(color) => onColorChange(color.toHexString())}

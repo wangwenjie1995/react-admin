@@ -1,0 +1,91 @@
+{
+  "type": "FeatureCollection",
+  "Name": "run-record",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Name": "起点",
+        "marker-color": "#f50505",
+        "marker-size": "medium",
+        "marker-symbol": "circle"
+      },
+      "geometry": {
+        "coordinates": [
+          121.358186,
+          31.211318
+        ],
+        "type": "Point"
+      },
+      "id": 11111111
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Name": "新泾家苑",
+        "marker-color": "#f50505",
+        "marker-size": "medium",
+        "marker-symbol": "circle"
+      },
+      "geometry": {
+        "coordinates": [
+          121.34562556890597,
+          31.209350662725882
+        ],
+        "type": "Point"
+      },
+      "id": 0
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#f20707",
+        "marker-size": "medium",
+        "marker-symbol": "circle",
+        "Name": "新泾北苑"
+      },
+      "geometry": {
+        "coordinates": [
+          121.3450449484144,
+          31.213512492798287
+        ],
+        "type": "Point"
+      },
+      "id": 1
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Name": "虹康花苑一期",
+        "marker-color": "#f40606",
+        "marker-size": "medium",
+        "marker-symbol": "circle"
+      },
+      "geometry": {
+        "coordinates": [
+          121.35917954950395,
+          31.211699317941907
+        ],
+        "type": "Point"
+      },
+      "id": 2
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Name": "长宁绿岛",
+        "marker-color": "#ed0707",
+        "marker-size": "medium",
+        "marker-symbol": "circle"
+      },
+      "geometry": {
+        "coordinates": [
+          121.34753620196636,
+          31.21088859757586
+        ],
+        "type": "Point"
+      },
+      "id": 3
+    }
+  ]
+}

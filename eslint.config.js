@@ -58,7 +58,8 @@ export default defineFlatConfig([
         jsxPragma: 'React',
         ecmaFeatures: {
           jsx: true
-        }
+        },
+        allowImportExportEverywhere: true, // 允许随处导入/导出
       },
     },
     plugins: {

@@ -1,5 +1,5 @@
 import type { RouteObject } from './types'
-import { Navigate, createHashRouter, redirect, createBrowserRouter } from 'react-router-dom'
+import { Navigate, redirect, createBrowserRouter } from 'react-router-dom'
 import { genFullPath } from './helpers'
 import { ExceptionEnum } from '@/enums/exceptionEnum'
 import { getAuthCache } from '@/utils/auth'
