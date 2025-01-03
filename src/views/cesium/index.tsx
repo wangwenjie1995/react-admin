@@ -27,20 +27,31 @@ const MapCesium = () => {
 
   let runnerBillboard: Cesium.Billboard | null //小人实例
   let billboardCollection: Cesium.BillboardCollection | null //小人实例集合
-  let linePrimitives: Cesium.Primitive[] = []; // 存储所有的linePrimitives
+  let polylineCollection: Cesium.PolylineCollection | null = null;
+  let dynamicPolyline: Cesium.Polyline | null
+  const initPolylineCollection = () => {
+    polylineCollection = new Cesium.PolylineCollection();
+    cesiumRef.current!.scene.primitives.add(polylineCollection);
+    dynamicPolyline = polylineCollection!.add({
+      positions: animationPositions,
+      width: 5,
+      material: Cesium.Material.fromType('PolylineGlow', {
+        glowPower: 0.3,
+        color: Cesium.Color.RED,
+      }),
+    });
+  }
+
   // 在初始化时创建 BillboardCollection 和 Billboard
   const initBillboard = async () => {
     billboardCollection = new Cesium.BillboardCollection();
     cesiumRef.current!.scene.primitives.add(billboardCollection);
-    console.log('initBillboard')
     runnerBillboard = billboardCollection.add({
       position: Cesium.Cartesian3.fromDegrees(0, 0, -1000000), // 默认在地球内部或屏幕外
       image: runnerImg, // 图片路径
       width: 60, // 宽度
       height: 60, // 高度
     });
-    console.log(billboardCollection, 'initBillboard billboardCollection')
-    console.log(runnerBillboard, 'initBillboard runnerBillboard')
   }
   /**
  * 将 Cartesian 坐标转换为经纬度
@@ -68,7 +79,8 @@ const MapCesium = () => {
     return { lat, lng };
   };
 
-  const drawLines = useCallback((clock: any) => {
+  const drawLines = (clock: any) => {
+    console.log('drawLines')
     if (firstTick) {
       //因为clock.onTick会比timeline晚调用，所以重置一下
       cesiumRef.current!.clock.shouldAnimate = true; // 启动时钟动画
@@ -79,75 +91,55 @@ const MapCesium = () => {
     const position = positionProperty.getValue(time);
 
     if (!position) {
-      cesiumRef.current!.zoomTo(dataSourceRef.current)
+      // cesiumRef.current!.zoomTo(dataSourceRef.current)
       cesiumRef.current!.clock.onTick.removeEventListener(drawLines);
       enableTimelineInteractions('.cesium-viewer-timelineContainer');
       return
     }
     // 更新 Billboard 的位置
-    console.log(runnerBillboard, 'drawLines runnerBillboard')
     runnerBillboard!.position = position;
-
     // 画线
     animationPositions.push(position)
 
-    if (animationPositions.length < 2) return
-
     if (animationPositions.length > 2) {
-      animationPositions.shift();
+      dynamicPolyline!.positions = animationPositions;
+    } else {
+      console.warn("Animation positions do not have enough points to render a line.");
     }
-    const polyline = new Cesium.PolylineGeometry({
-      positions: animationPositions,
-      width: 5, // 线宽
-    });
 
-    // 创建实例
-    const polylineInstance = new Cesium.GeometryInstance({
-      geometry: polyline,
-    });
-    const linePrimitive = new Cesium.Primitive({
-      geometryInstances: polylineInstance,
-      appearance: new Cesium.PolylineMaterialAppearance({
-        material: Cesium.Material.fromType('PolylineGlow', {
-          glowPower: 2,
-          color: Cesium.Color.RED,
-        }),
-      }),
-      asynchronous: false,
-    })
-    cesiumRef.current!.scene.primitives.add(linePrimitive);
-    linePrimitives.push(linePrimitive)
+    cesiumRef.current!.scene.requestRender(); // 强制更新渲染
 
     const { lat, lng } = cartesianToDegrees(position, cesiumRef.current!)
     onSetCameraView(lng, lat)
-  }, [])
+  }
   const clearPathLine = async () => {
+    cesiumRef.current!.scene.requestRenderMode = true; // 启用手动渲染模式
+
     //清除原有的entities
     animationPositions = []; //// 清空路径数据
     positionProperty = new Cesium.SampledPositionProperty(); // 重置位置属性
     cesiumRef.current!.entities.removeAll(); //清理所有实体
 
-    //清除primitives
+    //清除primitives和PolylineCollection
     cesiumRef.current!.clock.onTick.removeEventListener(drawLines); //停止动态路径更新
-    console.log(billboardCollection, 'billboardCollection')
+    if (polylineCollection) {
+      cesiumRef.current!.scene.primitives.remove(polylineCollection);
+      polylineCollection = null;
+      dynamicPolyline = null
+    }
+
     if (billboardCollection) {
       // 从 primitives 移除
       cesiumRef.current!.scene.primitives.remove(billboardCollection);
       // 清空引用
       billboardCollection = null;
       runnerBillboard = null;
-      console.log(runnerBillboard, 'clearPathLine runnerBillboard')
     }
-    // 5. 清除所有线条 (Primitives);清除linePrimitives
-    linePrimitives.forEach(linePrimitive => {
-      cesiumRef.current!.scene.primitives.remove(linePrimitive); // 移除之前的linePrimitive
-    });
-    linePrimitives = [];  // 清空存储的linePrimitives数组
+    cesiumRef.current!.scene.requestRender(); // 确保渲染更新
   }
-  const initPathLine = () => {
+  const initPathLine = async () => {
     //清除原有的entities和primitives
-    clearPathLine();
-
+    await clearPathLine();
     if (renderStyle === 1) {
       initPathLineByPrimitives();
     } else if (renderStyle === 2) {
@@ -169,7 +161,7 @@ const MapCesium = () => {
     //clockRange: 1.LOOP_STOP(循环) 2.UNBOUNDED(继续读秒) 3.CLAMPED(限制时间轴范围)
     cesiumRef.current!.clock.clockRange = Cesium.ClockRange.CLAMPED; // 限制时间轴范围
     // 时间速率，数字越大时间过的越快
-    cesiumRef.current!.clock.multiplier = 1;
+    cesiumRef.current!.clock.multiplier = 10;
     // 时间轴
     cesiumRef.current!.timeline.zoomTo(startTime, stopTime); //设置事件轴开始点和结束点
     // cesiumRef.current!.timeline._makeTics = () => { }; // 禁用时间轴交互
@@ -258,7 +250,7 @@ const MapCesium = () => {
     })
   }
   // 方法二 scene.primitives.add 重复调用
-  const initPathLineByPrimitives = async () => {
+  const initPathLineByPrimitives = () => {
     disableTimelineInteractions('.cesium-viewer-timelineContainer')
     // 添加一些位置样本，包括时间和位置信息
     const startTime = Cesium.JulianDate.fromDate(new Date());
@@ -270,7 +262,7 @@ const MapCesium = () => {
     // 设置始终停止时间
     cesiumRef.current!.clock.stopTime = stop.clone();
     // 时间速率，数字越大时间过的越快
-    cesiumRef.current!.clock.multiplier = 1;
+    cesiumRef.current!.clock.multiplier = 10;
     // 时间轴
     cesiumRef.current!.timeline.zoomTo(startTime, stop);
     cesiumRef.current!.clock.shouldAnimate = true;
@@ -288,7 +280,9 @@ const MapCesium = () => {
       // 添加位置，和时间对应
       positionProperty.addSample(time, position);
     }
-    await initBillboard()
+    initBillboard()
+    initPolylineCollection();
+    console.log('11111111111')
     cesiumRef.current!.clock.onTick.addEventListener(drawLines);
   }
 
@@ -512,10 +506,10 @@ const MapCesium = () => {
           <Col>
             <Button onClick={drawPoints}>生成标记地点</Button>
           </Col>
-          <Col>
+          {/* <Col>
             <Button onClick={onGenerateVideo} >生成视频</Button>
             <Spin spinning={spinning} fullscreen />
-          </Col>
+          </Col> */}
           <Col>
             <Button onClick={onClearCesium}>清空</Button>
           </Col>
