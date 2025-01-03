@@ -31,9 +31,7 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
     },
     plugins: [
       react(),
-      cesium({
-        removeCesiumLogo: true, // 自动移除 Cesium Logo
-      }),
+      cesium(),
       createSvgIconsPlugin({
         iconDirs: [resolve(process.cwd(), 'src/assets/icons')],
         symbolId: 'icon-[dir]-[name]'
