@@ -1,5 +1,6 @@
 import type { ConfigEnv, UserConfig } from 'vite'
 import { defineConfig, loadEnv } from 'vite'
+import { viteStaticCopy } from "vite-plugin-static-copy";
 import react from '@vitejs/plugin-react'
 import cesium from 'vite-plugin-cesium'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
@@ -8,6 +9,10 @@ import { wrapperEnv } from './build/utils'
 // 需要安装 @typings/node 插件
 import { resolve } from 'path'
 
+const cesiumSource = "node_modules/cesium/Build/Cesium";
+// This is the base url for static files that CesiumJS needs to load.
+// Set to an empty string to place the files at the site's root path
+const cesiumBaseUrl = "cesiumStatic";
 /** @type {import('vite').UserConfig} */
 export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
   const root = process.cwd()
@@ -29,9 +34,21 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       open: true,
       port: VITE_PORT
     },
+    define: {
+      // Define relative base path in cesium for loading assets
+      // https://vitejs.dev/config/shared-options.html#define
+      CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`),
+    },
     plugins: [
       react(),
-      cesium(),
+      viteStaticCopy({
+        targets: [
+          { src: `${cesiumSource}/ThirdParty`, dest: cesiumBaseUrl },
+          { src: `${cesiumSource}/Workers`, dest: cesiumBaseUrl },
+          { src: `${cesiumSource}/Assets`, dest: cesiumBaseUrl },
+          { src: `${cesiumSource}/Widgets`, dest: cesiumBaseUrl },
+        ],
+      }),
       createSvgIconsPlugin({
         iconDirs: [resolve(process.cwd(), 'src/assets/icons')],
         symbolId: 'icon-[dir]-[name]'

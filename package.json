@@ -56,6 +56,7 @@
     "sortablejs": "^1.15.0",
     "use-immer": "^0.9.0",
     "video.js": "^8.6.1",
+    "vite-plugin-static-copy": "^2.2.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
@@ -101,8 +102,7 @@
     "rollup": "^4.5.1",
     "terser": "^5.24.0",
     "typescript": "5.7.2",
-    "vite": "^4.5.0",
-    "vite-plugin-cesium": "^1.2.23",
+    "vite": "^5.0",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-mock": "2.9.8",
     "vite-plugin-svg-icons": "^2.0.1"
