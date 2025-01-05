@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as Cesium from 'cesium'
-import "cesium/Build/Cesium/Widgets/widgets.css";
+import 'cesium/Build/Cesium/Widgets/widgets.css';
 import styles from './cesium.module.less'
 import SPORT_DATA from './sportData'
 import { calculatePathLengths } from "@/utils/distance";
 import { pathLine } from "./path";
-import positionImg from '@/assets/images/position_2.svg'
+import positionImg from '@/assets/images/position_2.svg' //改成svg
 import runnerImg from '@/assets/images/runner_3.png'
 import { Button, Col, Radio, RadioChangeEvent, Row, Spin, Upload } from "antd";
 import { disableTimelineInteractions, enableTimelineInteractions } from "./util";

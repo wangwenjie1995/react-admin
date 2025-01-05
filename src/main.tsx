@@ -6,6 +6,8 @@ import { store, persistor } from './stores'
 import App from './App'
 import '@/design/index.less'
 import '@/language'
+// 配置 Cesium 静态资源的基路径
+(window as any).CESIUM_BASE_URL = "/Cesium";
 
 // register svg icon
 import 'virtual:svg-icons-register'
