@@ -20,7 +20,8 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
   return {
     // 开发环境： 确保本地开发中资源加载正常，通常使用 /。
     // 生产环境： 为了兼容各种部署方式（根目录或子目录），通常使用相对路径 './'。
-    base: isBuild ? './' : '/', // 开发和生产的 base 路径
+    // base: isBuild ? './' : '/', // 开发和生产的 base 路径
+    base: '/', // 如果设置了./(相对路径)会导致子页面访问不到dist/Cesium文件夹
     server: {
       // Listening on all local ips
       host: true,
