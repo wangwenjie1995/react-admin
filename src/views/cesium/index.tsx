@@ -22,10 +22,21 @@ const animationTime = 180; //动画时间：秒
 // 插值后，Cesium 会根据时间序列均匀地计算动画帧，保证平滑和连续性。
 let primitivesPositionProperty = new Cesium.SampledPositionProperty();
 let entitiesPositionProperty = new Cesium.SampledPositionProperty();
+
+const selected = {
+  feature: null,
+  originalColor: new Cesium.Color(),
+};
+const silhouetteBlue = Cesium.PostProcessStageLibrary.createEdgeDetectionStage();
+silhouetteBlue.uniforms.color = Cesium.Color.BLUE;
+silhouetteBlue.uniforms.length = 0.01;
+silhouetteBlue.selected = [];
+let osmBuildings: Cesium.Cesium3DTileset | null //用来保存OSM building
+let selectedFeature: Cesium.Cesium3DTileFeature | null// 用来保存当前选中的特征
+
 const MapCesium = () => {
   const cesiumRef = useRef<Cesium.Viewer | null>(null)
   const dataSourceRef = useRef<any>(null) //保持记录数据
-  const [spinning, setSpinning] = useState(false);
   const [renderStyle, setRenderStyle] = useState(2);
   let firstTick = true
 
@@ -328,7 +339,7 @@ const MapCesium = () => {
     // 时间轴
     cesiumRef.current!.timeline.zoomTo(startTime, stop);
     cesiumRef.current!.clock.shouldAnimate = true;
-    cesiumRef.current!.scene.globe.depthTestAgainstTerrain = false; //禁用深度测试,防止线条被遮挡
+    cesiumRef.current!.scene.globe.depthTestAgainstTerrain = true; //禁用深度测试,防止线条被遮挡
 
     const pathLengths = calculatePathLengths(positions)
     const totalDis = pathLengths[positions.length - 1]
@@ -417,9 +428,66 @@ const MapCesium = () => {
       creditContainer: document.createElement('div'),// 创建一个空的 div 隐藏版权信息
       terrain: Cesium.Terrain.fromWorldTerrain()
     })
+  }
+  const changeOsmBulidingsTilesetStyle = () => {
+    osmBuildings!.style = new Cesium.Cesium3DTileStyle({
+      defines: {
+        distanceFromComplex:
+          "distance(vec2(${feature['cesium#longitude']}, ${feature['cesium#latitude']}), vec2(144.96007, -37.82249))",
+      },
+      color: {
+        conditions: [
+          ["${distanceFromComplex} > 0.010", "color('#d65c5c')"],
+          ["${distanceFromComplex} > 0.006", "color('#f58971')"],
+          ["${distanceFromComplex} > 0.002", "color('#f5af71')"],
+          ["${distanceFromComplex} > 0.0001", "color('#f5ec71')"],
+          ["true", "color('#ffffff')"],
+        ],
+      },
+    });
+  }
+
+  const addMouseHoverAction = () => {
+    let originalColor: Cesium.Color; // 存储原始颜色
+    cesiumRef.current!.scene.postProcessStages.add(
+      Cesium.PostProcessStageLibrary.createSilhouetteStage([
+        silhouetteBlue,
+      ]),
+    );
+    cesiumRef.current!.screenSpaceEventHandler.setInputAction(function onMouseMove(movement: { endPosition: Cesium.Cartesian2; }) {
+      silhouetteBlue.selected = [] //清空之前的选中
+      const pickedFeature = cesiumRef.current!.scene.pick(movement.endPosition); //// 获取鼠标悬停位置的特征
+      if (!Cesium.defined(pickedFeature)) {
+        return;
+      }
+
+      if (pickedFeature !== selected.feature) {
+        // 恢复之前建筑的颜色
+        if (selected.feature && Cesium.defined(selected.feature)) {
+          (selected.feature as Cesium.Cesium3DTileFeature).color = selected.originalColor; // 恢复颜色
+          selected.feature = null;
+        }
+
+        silhouetteBlue.selected = [pickedFeature];
+        selected.feature = pickedFeature;
+        // 修改特定建筑的材质或颜色
+        if (pickedFeature instanceof Cesium.Cesium3DTileFeature) {
+          selected.originalColor = pickedFeature.color; // 存储原始颜色
+          pickedFeature.color = Cesium.Color.RED;
+        }
+      }
+    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+  };
+  const onLoadOSM = async () => {
     // 加载OSM建筑
-    addWorldTerrainAsync(cesiumRef.current);
-    addOsmBuildingsAsync(cesiumRef.current);
+    await addWorldTerrainAsync(cesiumRef.current!);
+    await addOsmBuildingsAsync(cesiumRef.current!);
+    cesiumRef.current!.camera.lookAt(
+      new Cesium.Cartesian3.fromDegrees(144.96007, -37.82249),
+      new Cesium.Cartesian3(0.0, -1500.0, 1200.0)
+    );
+
+    addMouseHoverAction()
   }
 
   const addWorldTerrainAsync = async (viewer: Cesium.Viewer) => {
@@ -432,76 +500,13 @@ const MapCesium = () => {
   };
   const addOsmBuildingsAsync = async (viewer: Cesium.Viewer) => {
     try {
-      const osmBuildings = await Cesium.createOsmBuildingsAsync();
+      //加载cesium默认建筑模型
+      osmBuildings = await Cesium.createOsmBuildingsAsync();
       viewer.scene.primitives.add(osmBuildings);
     } catch (error) {
       console.log(`${error}`);
     }
   }
-  const onGenerateVideo = async () => {
-    const cesiumCanvas = cesiumRef.current!.canvas;
-    const clock = cesiumRef.current!.clock;
-    const timeline = cesiumRef.current!.timeline;
-    setSpinning(true)
-
-    // 暂停动画并重置时间
-    clock.shouldAnimate = false; // 暂停动画
-    clock.currentTime = clock.startTime.clone(); // 从开始时间开始
-    timeline.zoomTo(clock.startTime, clock.stopTime); // 缩放时间轴
-
-    // 创建 MediaRecorder
-    const stream = cesiumCanvas.captureStream(60); // 30 FPS
-    const mediaRecorder = new MediaRecorder(stream, {
-      mimeType: 'video/webm;codecs=vp9', // 视频编码格式
-    });
-
-    const chunks: BlobPart[] = [];
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        chunks.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      // 合并视频并下载
-      const blob = new Blob(chunks, { type: 'video/webm' });
-      const url = URL.createObjectURL(blob);
-
-      // 创建下载链接
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'trajectory-video.webm';
-      link.click();
-      URL.revokeObjectURL(url); // 释放内存
-      setSpinning(false)
-    };
-
-    // 启动 MediaRecorder
-    mediaRecorder.start();
-
-    // 每帧渲染逻辑
-    const interval = 1 / 60; // 每帧间隔时间（秒）
-    const renderNextFrame = () => {
-      if (Cesium.JulianDate.greaterThanOrEquals(clock.currentTime, clock.stopTime)) {
-        console.log('Recording completed');
-        mediaRecorder.stop(); // 停止录制
-        return;
-      }
-
-      // 推进时间
-      clock.currentTime = Cesium.JulianDate.addSeconds(
-        clock.currentTime,
-        interval,
-        new Cesium.JulianDate()
-      );
-
-      // 请求下一帧渲染
-      requestAnimationFrame(renderNextFrame);
-    };
-
-    // 启动逐帧渲染
-    renderNextFrame();
-  };
   const goDirection = () => {
     // flyTo 方法会自动平滑移动到目标位置，提供动画效果。
     // 如果需要直接跳到目标位置而没有动画，可以使用 camera.setView 方法。
@@ -612,10 +617,6 @@ const MapCesium = () => {
           <Col>
             <Button onClick={drawPoints}>生成标记地点</Button>
           </Col>
-          {/* <Col>
-            <Button onClick={onGenerateVideo} >生成视频</Button>
-            <Spin spinning={spinning} fullscreen />
-          </Col> */}
           <Col>
             <Button onClick={onGenerateEllipsoid}>展示球形视频</Button>
           </Col>
@@ -623,8 +624,12 @@ const MapCesium = () => {
             <Button onClick={onGenerateAirModel}>展示Airplane模型</Button>
           </Col>
           <Col>
-            <Button onClick={onGenerateAirModel}>展示3DTitles</Button>
+            <Button onClick={onLoadOSM}>加载OSM建筑</Button>
           </Col>
+          <Col>
+            <Button onClick={changeOsmBulidingsTilesetStyle}>修改颜色</Button>
+          </Col>
+
           <Col>
             <Button onClick={goDirection}>跳转位置</Button>
           </Col>
