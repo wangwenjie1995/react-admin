@@ -9,7 +9,7 @@ import positionImg from '@/assets/images/position.png' //改成svg
 import runnerImg from '@/assets/images/runner.png'
 
 import { Button, Col, Radio, RadioChangeEvent, Row, Spin, Upload } from "antd";
-import { disableTimelineInteractions, enableTimelineInteractions } from "./util";
+import { addPersonViewSelect, cartesianToDegrees, disableTimelineInteractions, enableFirstPersonView, enableTimelineInteractions, loadAirModel } from "./util";
 import CesiumVideo from "./cesiumVideo";
 
 // 路线数据
@@ -22,17 +22,19 @@ const animationTime = 180; //动画时间：秒
 // 插值后，Cesium 会根据时间序列均匀地计算动画帧，保证平滑和连续性。
 let primitivesPositionProperty = new Cesium.SampledPositionProperty();
 let entitiesPositionProperty = new Cesium.SampledPositionProperty();
-
-const selected = {
+//保存选中的特征
+const selected: {
+  feature: Cesium.Cesium3DTileFeature | null,
+  originalColor: Cesium.Color | null,
+} = {
   feature: null,
-  originalColor: new Cesium.Color(),
+  originalColor: null,
 };
 const silhouetteBlue = Cesium.PostProcessStageLibrary.createEdgeDetectionStage();
 silhouetteBlue.uniforms.color = Cesium.Color.BLUE;
 silhouetteBlue.uniforms.length = 0.01;
 silhouetteBlue.selected = [];
 let osmBuildings: Cesium.Cesium3DTileset | null //用来保存OSM building
-let selectedFeature: Cesium.Cesium3DTileFeature | null// 用来保存当前选中的特征
 
 const MapCesium = () => {
   const cesiumRef = useRef<Cesium.Viewer | null>(null)
@@ -73,6 +75,7 @@ const MapCesium = () => {
       },
     });
     cesiumRef.current!.trackedEntity = airEntity; // 视角锁定在这个entity上
+    // enableFirstPersonView(cesiumRef.current!, airEntity)
   }
 
   const initPolylineCollection = () => {
@@ -108,25 +111,7 @@ const MapCesium = () => {
  * @param viewer - Cesium.Viewer 对象
  * @returns { lat: number, lng: number } 经纬度对象
  */
-  const cartesianToDegrees = (position: Cesium.Cartesian3, viewer: Cesium.Viewer): { lat: number, lng: number } => {
-    if (!position || !viewer) {
-      console.error("Invalid position or viewer.");
-      return { lat: 0, lng: 0 };
-    }
 
-    const ellipsoid = viewer.scene.globe.ellipsoid;
-    const cartographic = ellipsoid.cartesianToCartographic(position);
-
-    if (!cartographic) {
-      console.error("Failed to convert Cartesian to Cartographic.");
-      return { lat: 0, lng: 0 };
-    }
-
-    const lat = Cesium.Math.toDegrees(cartographic.latitude);
-    const lng = Cesium.Math.toDegrees(cartographic.longitude);
-
-    return { lat, lng };
-  };
 
   const drawLines = useCallback((clock: any) => {
     if (firstTick) {
@@ -186,6 +171,7 @@ const MapCesium = () => {
 
     cesiumRef.current!.scene.requestRender(); // 确保渲染更新
   }
+
   const initPathLine = async () => {
     //清除原有的entities和primitives
     await clearPathLine();
@@ -236,6 +222,15 @@ const MapCesium = () => {
     }
     //确保stopTime有采样点,防止边界问题
     entitiesPositionProperty.addSample(stopTime, positions[positionsLen - 1]);
+    //优化线路
+    (entitiesPositionProperty as Cesium.SampledPositionProperty).setInterpolationOptions({
+      interpolationDegree: 5,
+      interpolationAlgorithm: Cesium.LagrangePolynomialApproximation,
+    });
+    // (entitiesPositionProperty as Cesium.SampledPositionProperty).setInterpolationOptions({
+    //   interpolationDegree: 2,
+    //   interpolationAlgorithm: Cesium.HermitePolynomialApproximation,
+    // });
     // 添加跑步的小人
     // 添加一个实体(Entity), 小人通过billboard图像显示,路径通过CallbackProperty动态更新
     // CallbackProperty: 一个动态属性，值会随着时间动态变化。
@@ -257,10 +252,48 @@ const MapCesium = () => {
         disableDepthTestDistance: Number.POSITIVE_INFINITY, // 防止被遮挡
       },
     });
-    const airModel = loaderAirModel();
+    const airModel = loadAirModel(cesiumRef.current!, entitiesPositionProperty);
     const airEntity = cesiumRef.current!.entities.add(airModel);
-
-    cesiumRef.current!.trackedEntity = airEntity;
+    let clearFirstPersonView: (() => void) | null = enableFirstPersonView(cesiumRef.current!, airEntity)
+    const buttonsConfig = [
+      {
+        text: "第一视角",
+        key: "firstPerson",
+        onClick: () => {
+          if (!clearFirstPersonView) {
+            clearFirstPersonView = enableFirstPersonView(cesiumRef.current!, airEntity);
+            cesiumRef.current!.trackedEntity = undefined; // 取消 Tracked Entity
+          }
+        }
+      },
+      {
+        text: "Tracked Entity",
+        key: "trackedEntity",
+        onClick: () => {
+          if (cesiumRef.current!.trackedEntity !== airEntity) {
+            if (clearFirstPersonView) {
+              clearFirstPersonView(); // 清除第一视角
+              clearFirstPersonView = null; // 重置为 null
+            }
+            cesiumRef.current!.trackedEntity = airEntity; // 切换到 Tracked Entity
+          }
+        }
+      },
+      {
+        text: "自由视角",
+        key: "freeView",
+        onClick: () => {
+          if (cesiumRef.current!.trackedEntity !== undefined || clearFirstPersonView) {
+            if (clearFirstPersonView) {
+              clearFirstPersonView(); // 清除第一视角
+              clearFirstPersonView = null; // 重置为 null
+            }
+            cesiumRef.current!.trackedEntity = undefined; // 切换到自由视角
+          }
+        }
+      },
+    ];
+    addPersonViewSelect(buttonsConfig, 'firstPerson');
     const videoElement = document.getElementById('trailer') as HTMLVideoElement
     const ellipsoidEntity = cesiumRef.current!.entities.add({
       position: new Cesium.CallbackProperty((time) => {
@@ -310,6 +343,7 @@ const MapCesium = () => {
       if (Cesium.JulianDate.equals(clock.stopTime, curTime)) {
         enableTimelineInteractions('.cesium-viewer-timelineContainer');
         cesiumRef.current!.clock.onTick.removeEventListener(onTick);
+        clearFirstPersonView?.()
         return
       }
       //画线
@@ -448,42 +482,46 @@ const MapCesium = () => {
   }
 
   const addMouseHoverAction = () => {
-    let originalColor: Cesium.Color; // 存储原始颜色
     cesiumRef.current!.scene.postProcessStages.add(
       Cesium.PostProcessStageLibrary.createSilhouetteStage([
         silhouetteBlue,
       ]),
     );
     cesiumRef.current!.screenSpaceEventHandler.setInputAction(function onMouseMove(movement: { endPosition: Cesium.Cartesian2; }) {
-      silhouetteBlue.selected = [] //清空之前的选中
       const pickedFeature = cesiumRef.current!.scene.pick(movement.endPosition); //// 获取鼠标悬停位置的特征
+
       if (!Cesium.defined(pickedFeature)) {
+        silhouetteBlue.selected = [] //清空之前的选中
+        if (selected.feature && selected.originalColor && Cesium.defined(selected.feature)) {
+          selected.feature.color = selected.originalColor; // 恢复颜色
+          selected.feature = null;
+          selected.originalColor = null;
+        }
         return;
       }
 
       if (pickedFeature !== selected.feature) {
         // 恢复之前建筑的颜色
-        if (selected.feature && Cesium.defined(selected.feature)) {
-          (selected.feature as Cesium.Cesium3DTileFeature).color = selected.originalColor; // 恢复颜色
+        if (selected.feature && selected.originalColor && Cesium.defined(selected.feature)) {
+          selected.feature.color = selected.originalColor; // 恢复颜色
           selected.feature = null;
+          selected.originalColor = null;
         }
 
         silhouetteBlue.selected = [pickedFeature];
         selected.feature = pickedFeature;
         // 修改特定建筑的材质或颜色
-        if (pickedFeature instanceof Cesium.Cesium3DTileFeature) {
-          selected.originalColor = pickedFeature.color; // 存储原始颜色
-          pickedFeature.color = Cesium.Color.RED;
-        }
+        selected.originalColor = pickedFeature.color; // 存储原始颜色
+        pickedFeature.color = Cesium.Color.RED;
       }
     }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
   };
   const onLoadOSM = async () => {
     // 加载OSM建筑
-    await addWorldTerrainAsync(cesiumRef.current!);
+    // await addWorldTerrainAsync(cesiumRef.current!);
     await addOsmBuildingsAsync(cesiumRef.current!);
     cesiumRef.current!.camera.lookAt(
-      new Cesium.Cartesian3.fromDegrees(144.96007, -37.82249),
+      Cesium.Cartesian3.fromDegrees(144.96007, -37.82249),
       new Cesium.Cartesian3(0.0, -1500.0, 1200.0)
     );
 
@@ -499,6 +537,10 @@ const MapCesium = () => {
     }
   };
   const addOsmBuildingsAsync = async (viewer: Cesium.Viewer) => {
+    if (osmBuildings) {
+      console.log('111111')
+      return
+    }
     try {
       //加载cesium默认建筑模型
       osmBuildings = await Cesium.createOsmBuildingsAsync();
@@ -561,40 +603,7 @@ const MapCesium = () => {
       cesiumRef.current = null;   // 释放引用
     }
   }
-  const loaderAirModel = () => {
-    const airModel = {
-      //availability:定义了该实体的时间可用性，即模型在那些时间内可见
-      // availability: new Cesium.TimeIntervalCollection([new Cesium.TimeInterval({ start: start, stop: stop })]),
-      // position: entitiesPositionProperty,
-      // position: new Cesium.CallbackProperty(function(time) {
-      //   // 假设 entitiesPositionProperty 是经纬度数据，缺少高度
-      //   const curPosition = entitiesPositionProperty.getValue(time);  // 获取经纬度（longitude, latitude）
-      //   return new Cesium.Cartesian3(curPosition[0], curPosition[1], 200);  // 使用默认高度
-      // }, false),
-      position: new Cesium.CallbackProperty((time) => {
-        //positionProperty.getValue(time):获取对应时间的动态位置
-        // 获取当前时间对应的动态位置
-        const currentPosition = entitiesPositionProperty.getValue(time);
-        if (!currentPosition) return undefined; // 确保位置有效
-        const { lng, lat } = cartesianToDegrees(currentPosition, cesiumRef.current!)
-        return Cesium.Cartesian3.fromDegrees(lng, lat, 20);
-      }, false) as Cesium.CallbackPositionProperty,
-      model: {
-        uri: '/3DModels/Cesium_Air.glb', // 带有骨骼动画的小人模型
-        minimumPixelSize: 128, //设置模型的最小像素大小，即模型在屏幕上显示时的最小尺寸（以像素为单位
-        maximumScale: 20000,
-        runAnimations: true, // 启用模型动画
-      },
-      // Automatically compute the orientation from the position.
-      // orientation:定义实体的朝向（旋转）
-      // VelocityOrientationProperty是一个计算方向的属性，它通过计算实体位置属性的速度来自动生成实体的朝向
-      // 如果 positionProperty 是动态的，VelocityOrientationProperty 会基于位置的速度计算出一个合适的朝向（例如，如果飞行器正在飞行，模型会朝向飞行的方向）。
-      orientation: new Cesium.VelocityOrientationProperty(entitiesPositionProperty),
-      // PathGraphics 是用于绘制实体路径的属性：设置了 3 像素
-      path: new Cesium.PathGraphics({ width: 3 })
-    }
-    return airModel
-  }
+
   useEffect(() => {
     initCesium();
     return () => {
