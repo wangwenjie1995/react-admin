@@ -130,9 +130,28 @@ interface ButtonConfig {
   text: string;
   onClick: () => void;
 }
-export const addPersonViewSelect = (buttonsConfig: ButtonConfig[], defaultActive: string) => {
-  const buttonsDiv = document.createElement("div");
-  buttonsDiv.style.cssText = `
+export const addCesiumButton = (buttonsConfig: ButtonConfig[], defaultActive: string = '') => {
+  const container = document.getElementById('cesiumContainer');
+  let cesiumButtonsDiv: HTMLElement | null
+  // 用于存储按钮元素
+  let buttons: HTMLButtonElement[] = [];
+  if (!container) {
+    console.error("容器不存在：cesiumContainer");
+    return;
+  }
+
+  // 检查是否已存在具有特定 key 的 div
+  cesiumButtonsDiv = container.querySelector("[data-key='view-buttons']");
+  if (cesiumButtonsDiv) {
+    cesiumButtonsDiv.innerHTML = ''; // 清空内部内容
+    buttons = []
+  } else {
+    cesiumButtonsDiv = document.createElement("div");
+    cesiumButtonsDiv.setAttribute("data-key", "view-buttons"); // 设置唯一标识
+    document.getElementById('cesiumContainer')!.appendChild(cesiumButtonsDiv);
+  }
+
+  cesiumButtonsDiv.style.cssText = `
     position: absolute;
     left: 10px;
     top: 10px;
@@ -161,8 +180,7 @@ export const addPersonViewSelect = (buttonsConfig: ButtonConfig[], defaultActive
     border: 1px solid #666;
     color: #fff;
   `;
-  // 用于存储按钮元素
-  const buttons: HTMLButtonElement[] = [];
+
   // 遍历创建按钮
   buttonsConfig.forEach(({ text, key, onClick }) => {
     const button = document.createElement("button");
@@ -181,7 +199,35 @@ export const addPersonViewSelect = (buttonsConfig: ButtonConfig[], defaultActive
       button.style.cssText = buttonStyle + activeButtonStyle;
     }
     buttons.push(button);
-    buttonsDiv.appendChild(button); // 添加按钮到容器
+    cesiumButtonsDiv.appendChild(button); // 添加按钮到容器
   });
-  document.getElementById('cesiumContainer')!.appendChild(buttonsDiv);
+
+}
+export const removeCesiumButton = () => {
+  const container = document.getElementById('cesiumContainer');
+  // 用于存储按钮元素
+  if (!container) {
+    console.error("容器不存在：cesiumContainer");
+    return;
+  }
+  let cesiumButtonsDiv = container.querySelector("[data-key='view-buttons']");
+  // 检查是否已存在具有特定 key 的 div
+  if (cesiumButtonsDiv) {
+    cesiumButtonsDiv.innerHTML = ''; // 清空内部内容
+  }
+}
+
+export const getCameraOffset = (viewer: Cesium.Viewer): Cesium.Cartesian3 => {
+  const camera = viewer.scene.camera;
+
+  // 如果 transform 是 IDENTITY，说明没有设置 lookAtTransform
+  if (Cesium.Matrix4.equals(camera.transform, Cesium.Matrix4.IDENTITY)) {
+    throw new Error("当前相机没有绑定到 transform");
+  }
+
+  // 计算相机的本地偏移量
+  const inverseTransform = Cesium.Matrix4.inverse(camera.transform, new Cesium.Matrix4());
+  const offset = Cesium.Matrix4.multiplyByPoint(inverseTransform, camera.position, new Cesium.Cartesian3());
+
+  return offset; // 偏移量（本地坐标系）
 }

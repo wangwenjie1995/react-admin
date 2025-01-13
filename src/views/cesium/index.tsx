@@ -9,7 +9,7 @@ import positionImg from '@/assets/images/position.png' //改成svg
 import runnerImg from '@/assets/images/runner.png'
 
 import { Button, Col, Radio, RadioChangeEvent, Row, Spin, Upload } from "antd";
-import { addPersonViewSelect, cartesianToDegrees, disableTimelineInteractions, enableFirstPersonView, enableTimelineInteractions, loadAirModel } from "./util";
+import { addCesiumButton, cartesianToDegrees, disableTimelineInteractions, enableFirstPersonView, enableTimelineInteractions, loadAirModel, removeCesiumButton } from "./util";
 import CesiumVideo from "./cesiumVideo";
 
 // 路线数据
@@ -30,10 +30,7 @@ const selected: {
   feature: null,
   originalColor: null,
 };
-const silhouetteBlue = Cesium.PostProcessStageLibrary.createEdgeDetectionStage();
-silhouetteBlue.uniforms.color = Cesium.Color.BLUE;
-silhouetteBlue.uniforms.length = 0.01;
-silhouetteBlue.selected = [];
+
 let osmBuildings: Cesium.Cesium3DTileset | null //用来保存OSM building
 
 const MapCesium = () => {
@@ -75,7 +72,6 @@ const MapCesium = () => {
       },
     });
     cesiumRef.current!.trackedEntity = airEntity; // 视角锁定在这个entity上
-    // enableFirstPersonView(cesiumRef.current!, airEntity)
   }
 
   const initPolylineCollection = () => {
@@ -293,7 +289,7 @@ const MapCesium = () => {
         }
       },
     ];
-    addPersonViewSelect(buttonsConfig, 'firstPerson');
+    addCesiumButton(buttonsConfig, 'firstPerson');
     const videoElement = document.getElementById('trailer') as HTMLVideoElement
     const ellipsoidEntity = cesiumRef.current!.entities.add({
       position: new Cesium.CallbackProperty((time) => {
@@ -481,42 +477,79 @@ const MapCesium = () => {
     });
   }
 
-  const addMouseHoverAction = () => {
-    cesiumRef.current!.scene.postProcessStages.add(
-      Cesium.PostProcessStageLibrary.createSilhouetteStage([
-        silhouetteBlue,
-      ]),
-    );
-    cesiumRef.current!.screenSpaceEventHandler.setInputAction(function onMouseMove(movement: { endPosition: Cesium.Cartesian2; }) {
-      const pickedFeature = cesiumRef.current!.scene.pick(movement.endPosition); //// 获取鼠标悬停位置的特征
+  const addMouseHoverAction = (() => {
+    let silhouetteStage: Cesium.PostProcessStage | Cesium.PostProcessStageComposite | null = null;
+    let silhouetteBlue: Cesium.PostProcessStage | null = null
+    const initSilhouetteBlue = () => {
+      silhouetteBlue = Cesium.PostProcessStageLibrary.createEdgeDetectionStage();
+      silhouetteBlue.uniforms.color = Cesium.Color.BLUE;
+      silhouetteBlue.uniforms.length = 0.01;
+      silhouetteBlue.selected = [];
+    }
+    const clearSilhouetteStage = () => {
+      if (silhouetteStage) {
+        cesiumRef.current?.scene.postProcessStages.remove(silhouetteStage);
+        silhouetteStage = null;
+      }
+      if (silhouetteBlue) {
+        silhouetteBlue = null
+        initSilhouetteBlue()
+      }
+      // 移除鼠标移动事件绑定
+      if (cesiumRef.current) {
+        cesiumRef.current.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+      }
+    };
 
-      if (!Cesium.defined(pickedFeature)) {
-        silhouetteBlue.selected = [] //清空之前的选中
-        if (selected.feature && selected.originalColor && Cesium.defined(selected.feature)) {
-          selected.feature.color = selected.originalColor; // 恢复颜色
-          selected.feature = null;
-          selected.originalColor = null;
-        }
+    const add = () => {
+      // 检查 Viewer 是否有效
+      if (!cesiumRef.current || !cesiumRef.current.scene) {
+        console.error("Cesium Viewer 未初始化或已被销毁");
         return;
       }
-
-      if (pickedFeature !== selected.feature) {
-        // 恢复之前建筑的颜色
-        if (selected.feature && selected.originalColor && Cesium.defined(selected.feature)) {
-          selected.feature.color = selected.originalColor; // 恢复颜色
-          selected.feature = null;
-          selected.originalColor = null;
+      if (silhouetteStage) {
+        console.log("addMouseHoverAction 已经执行过，不重复执行");
+        return;
+      }
+      initSilhouetteBlue()
+      silhouetteStage = cesiumRef.current!.scene.postProcessStages.add(
+        Cesium.PostProcessStageLibrary.createSilhouetteStage([
+          silhouetteBlue!,
+        ]),
+      );
+      cesiumRef.current!.screenSpaceEventHandler.setInputAction(function (movement: { endPosition: Cesium.Cartesian2; }) {
+        const pickedFeature = cesiumRef.current!.scene.pick(movement.endPosition); //// 获取鼠标悬停位置的特征
+        if (!Cesium.defined(pickedFeature)) {
+          silhouetteBlue!.selected = [] //清空之前的选中
+          if (selected.feature && selected.originalColor && Cesium.defined(selected.feature)) {
+            selected.feature.color = selected.originalColor; // 恢复颜色
+            selected.feature = null;
+            selected.originalColor = null;
+          }
+          return;
         }
 
-        silhouetteBlue.selected = [pickedFeature];
-        selected.feature = pickedFeature;
-        // 修改特定建筑的材质或颜色
-        selected.originalColor = pickedFeature.color; // 存储原始颜色
-        pickedFeature.color = Cesium.Color.RED;
-      }
-    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
-  };
+        if (pickedFeature !== selected.feature) {
+          // 恢复之前建筑的颜色
+          if (selected.feature && selected.originalColor && Cesium.defined(selected.feature)) {
+            selected.feature.color = selected.originalColor; // 恢复颜色
+            selected.feature = null;
+            selected.originalColor = null;
+          }
+
+          silhouetteBlue!.selected = [pickedFeature];
+          selected.feature = pickedFeature;
+          // 修改特定建筑的材质或颜色
+          selected.originalColor = pickedFeature.color; // 存储原始颜色
+          pickedFeature.color = Cesium.Color.RED;
+        }
+      }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+    }
+    // 暴露清空方法
+    return { add, clear: () => clearSilhouetteStage() };
+  })();
   const onLoadOSM = async () => {
+
     // 加载OSM建筑
     // await addWorldTerrainAsync(cesiumRef.current!);
     await addOsmBuildingsAsync(cesiumRef.current!);
@@ -524,8 +557,23 @@ const MapCesium = () => {
       Cesium.Cartesian3.fromDegrees(144.96007, -37.82249),
       new Cesium.Cartesian3(0.0, -1500.0, 1200.0)
     );
-
-    addMouseHoverAction()
+    const buttonsConfig = [
+      {
+        text: "修改模型颜色",
+        key: "modifyModelColor",
+        onClick: () => {
+          changeOsmBulidingsTilesetStyle()
+        }
+      },
+      {
+        text: "悬浮(加轮廓+修改颜色)",
+        key: "hoverAddPoly",
+        onClick: () => {
+          addMouseHoverAction.add()
+        }
+      },
+    ];
+    addCesiumButton(buttonsConfig);
   }
 
   const addWorldTerrainAsync = async (viewer: Cesium.Viewer) => {
@@ -533,12 +581,11 @@ const MapCesium = () => {
       const terrainProvider = await Cesium.createWorldTerrainAsync({ requestVertexNormals: true, requestWaterMask: true, });
       viewer.terrainProvider = terrainProvider;
     } catch (error) {
-      console.log(`${error}`);
+      console.error(`${error}`);
     }
   };
   const addOsmBuildingsAsync = async (viewer: Cesium.Viewer) => {
     if (osmBuildings) {
-      console.log('111111')
       return
     }
     try {
@@ -546,7 +593,7 @@ const MapCesium = () => {
       osmBuildings = await Cesium.createOsmBuildingsAsync();
       viewer.scene.primitives.add(osmBuildings);
     } catch (error) {
-      console.log(`${error}`);
+      console.error(`${error}`);
     }
   }
   const goDirection = () => {
@@ -594,8 +641,14 @@ const MapCesium = () => {
     })
   }
   const onClearCesium = () => {
+    initDefaultValue()
     destroyViewer()
     initCesium()
+  }
+  const initDefaultValue = () => {
+    addMouseHoverAction.clear()
+    osmBuildings = null
+    removeCesiumButton()
   }
   const destroyViewer = () => {
     if (cesiumRef.current) {
@@ -634,9 +687,6 @@ const MapCesium = () => {
           </Col>
           <Col>
             <Button onClick={onLoadOSM}>加载OSM建筑</Button>
-          </Col>
-          <Col>
-            <Button onClick={changeOsmBulidingsTilesetStyle}>修改颜色</Button>
           </Col>
 
           <Col>

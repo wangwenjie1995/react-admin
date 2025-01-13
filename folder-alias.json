@@ -1,0 +1,11 @@
+{
+    "src/views/cesium": {
+        "description": "Cesium文件夹"
+    },
+    "src/views": {
+        "description": "页面视图文件夹"
+    },
+    "src/design": {
+        "description": "css样式文件夹"
+    }
+}
