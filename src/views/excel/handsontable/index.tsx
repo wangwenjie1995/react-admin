@@ -136,9 +136,9 @@ const ExcelTable: React.FC = () => {
       <div className={styles['handsontable-page']}>
         <div className={styles['handsontable-tools']}>
           <Row align="middle" gutter={8}>
-            <Col>
+            {/* <Col>
               <Button onClick={onUploadExcel}>导入Excel</Button>
-            </Col>
+            </Col> */}
             <Col>
               <Button onClick={onExportCsvFile}>导出Excel</Button>
             </Col>

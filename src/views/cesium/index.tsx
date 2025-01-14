@@ -518,7 +518,8 @@ const MapCesium = () => {
         ]),
       );
       cesiumRef.current!.screenSpaceEventHandler.setInputAction(function (movement: { endPosition: Cesium.Cartesian2; }) {
-        const pickedFeature = cesiumRef.current!.scene.pick(movement.endPosition); //// 获取鼠标悬停位置的特征
+        const pickedFeature: Cesium.Cesium3DTileFeature = cesiumRef.current!.scene.pick(movement.endPosition); //// 获取鼠标悬停位置的特征
+
         if (!Cesium.defined(pickedFeature)) {
           silhouetteBlue!.selected = [] //清空之前的选中
           if (selected.feature && selected.originalColor && Cesium.defined(selected.feature)) {

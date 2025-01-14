@@ -155,6 +155,7 @@ export const addCesiumButton = (buttonsConfig: ButtonConfig[], defaultActive: st
     position: absolute;
     left: 10px;
     top: 10px;
+    z-index: 1000;
   `;
   const buttonStyle = `
     display: inline-block;
@@ -182,6 +183,7 @@ export const addCesiumButton = (buttonsConfig: ButtonConfig[], defaultActive: st
   `;
 
   // 遍历创建按钮
+  console.log('遍历创建按钮')
   buttonsConfig.forEach(({ text, key, onClick }) => {
     const button = document.createElement("button");
     button.style.cssText = buttonStyle;
