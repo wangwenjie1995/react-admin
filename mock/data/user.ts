@@ -69,6 +69,11 @@ export function createFakeUserList() {
               "name": "CountUp",
               "path": "/count-up",
               "title": "数字滚动"
+            },
+            {
+              "name": "WaterfallDemo",
+              "path": "/waterfall-demo",
+              "title": "瀑布流"
             }
           ]
         },

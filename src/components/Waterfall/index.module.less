@@ -1,0 +1,27 @@
+.waterfall-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.waterfall-container {
+  overflow: visible; // 容器本身不再需要滚动
+  position: relative; // 保持子元素绝对定位的上下文
+}
+
+.waterfall-item {
+  position: absolute;
+  transition: transform 0.3s ease;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  overflow: hidden;
+}
+
+.waterfall-footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 14px;
+  color: #666;
+}

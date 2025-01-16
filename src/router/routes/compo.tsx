@@ -66,6 +66,15 @@ const CompoRoute: RouteObject = {
         title: '数字滚动',
         key: 'countUp'
       }
+    },
+    {
+      path: 'waterfall-demo',
+      name: 'WaterfallDemo',
+      element: LazyLoad(lazy(() => import('@/views/compo/waterfallDemo'))),
+      meta: {
+        title: '瀑布流',
+        key: 'waterfallDemo'
+      }
     }
   ]
 }

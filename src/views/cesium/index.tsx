@@ -10,7 +10,6 @@ import runnerImg from '@/assets/images/runner.png'
 
 import { Button, Col, Radio, RadioChangeEvent, Row, Spin, Upload } from "antd";
 import { addCesiumButton, cartesianToDegrees, disableTimelineInteractions, enableFirstPersonView, enableTimelineInteractions, loadAirModel, removeCesiumButton } from "./util";
-import CesiumVideo from "./cesiumVideo";
 
 // 路线数据
 const positions = SPORT_DATA.map(item => Cesium.Cartesian3.fromDegrees(item['longitude'], item['latitude']))
