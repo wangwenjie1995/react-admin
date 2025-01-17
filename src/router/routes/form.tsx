@@ -23,15 +23,15 @@ const FormRoute: RouteObject = {
         key: 'basicForm'
       }
     },
-    {
-      path: 'form-designer',
-      name: 'FormDesigner',
-      element: LazyLoad(lazy(() => import('@/views/blank'))),
-      meta: {
-        title: '表单设计器',
-        key: 'formDesigner'
-      }
-    }
+    // {
+    //   path: 'form-designer',
+    //   name: 'FormDesigner',
+    //   element: LazyLoad(lazy(() => import('@/views/blank'))),
+    //   meta: {
+    //     title: '表单设计器',
+    //     key: 'formDesigner'
+    //   }
+    // }
   ]
 }
 

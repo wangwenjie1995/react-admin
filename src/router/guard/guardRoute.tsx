@@ -15,7 +15,8 @@ const checkAutn = (permissions: Permission[], path: string): boolean => {
     if (permission.children && permission.children.length) {
       //递归检查子节点
       for (const child of permission.children) {
-        const fullPath = permission.path + child.path
+
+        const fullPath = permission.fullPath + child.path
         if (fullPath === path) {
           return true
         }
@@ -47,6 +48,7 @@ export const GuardRoute = ({ children }: { children: ReactNode }) => {
   // 如果有 token，检查权限
   if (!checkAutn(permissions, pathname)) {
     // 如果没有权限，跳转到 403 页面或其他权限不足页面
+    console.log(permissions, pathname)
     return <Navigate to="/403" replace />;
   }
 

@@ -15,6 +15,7 @@ export interface UserInfo {
 }
 export interface Permission {
   path: string
+  fullPath: string
   name: string
   title: string
   tKey?: string
