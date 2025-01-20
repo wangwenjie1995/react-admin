@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from './index.module.less'
 import { Spin } from "antd";
 import { debounce, throttle } from "lodash-es";
@@ -18,82 +18,77 @@ interface Position {
 const Waterfall: React.FC<WaterfallProps> = ({ columnCount = 3, gap = 16, getList }: WaterfallProps) => {
   const wrapRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLDivElement>(null)
   const itemsRef = useRef<any[]>([])
-  const [itemPositions, setItemPositions] = useState<Position[]>([])
+  const itemPositions = useRef<Position[]>([])
+  const [visibleList, setVisibleList] = useState<Position[]>([])
   const [containerHeight, setContainerHeight] = useState(0);
   const [isLoading, setIsLoading] = useState(false) //用户视图更新
   const isLoadingRef = useRef(false) //用户视图更新
   // 缓存每列的当前高度
   const columnHeights = useRef<number[]>(Array(columnCount).fill(0));
-  const handleScroll = () => {
-    if (!wrapRef.current || isLoadingRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = wrapRef.current;
-    const buffer = 100;//缓冲距离
-    //判断是否接近底部
-    if (scrollTop + clientHeight >= scrollHeight - buffer) {
-      loaderMoreItems()
-    }
-  }
+
   const updateContainerHeight = () => {
     const maxHeight = Math.max(...columnHeights.current);
     setContainerHeight(maxHeight);
   };
-  const handleResize = () => {
-    if (!containerRef.current) return;
-    containerRef.current.scrollTop = 0;
-    // 重置每列的高度
-    columnHeights.current = Array(columnCount).fill(0);
-    appendPositions(itemsRef.current, true)
+
+  const updateVisibleList = () => {
+    if (!wrapRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = wrapRef.current;
+    //1.元素底部低于屏幕顶部 2.元素顶部高于屏幕底部
+    let visibleList = itemPositions.current.filter((item) => {
+      return (
+        item.y + item.height >= scrollTop - 400 && item.y <= scrollTop + clientHeight + 400
+      );
+    });
+    setVisibleList(visibleList)
   }
   //初始化
+  const initData = async () => {
+    await loaderMoreItems()
+    updateVisibleList()
+  }
   useEffect(() => {
-    loaderMoreItems()
+    initData()
+  }, [])
+  useEffect(() => {
     if (!containerRef.current || !wrapRef.current) {
       return
     }
-    const triggerObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && !isLoadingRef.current) {
-          loaderMoreItems();
-        }
-      });
-    }, {
-      root: wrapRef.current,
-      rootMargin: "100px",
-      threshold: 0.1,
-    })
-    if (triggerRef.current) {
-      triggerObserver.observe(triggerRef.current);
-    }
     // 防抖函数
-    const throttleHandleResize = throttle(() => {
-      handleResize();
+    const handleResize = throttle(() => {
+      if (!wrapRef.current) return;
+      wrapRef.current.scrollTop = 0;
+      // 重置每列的高度
+      columnHeights.current = Array(columnCount).fill(0);
+      appendPositions(itemsRef.current, true)
+      updateVisibleList()
     }, 200);
     // 防抖函数
-    // const throttleHandleScroll = throttle(() => {
-    //   handleScroll();
-    // }, 200);
+    const handleScroll = throttle(async () => {
+      if (!wrapRef.current || isLoadingRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = wrapRef.current;
+      const buffer = 400;//缓冲距离
+      //判断是否接近底部
+      if (scrollTop + clientHeight >= scrollHeight - buffer) {
+        await loaderMoreItems()
+      }
+      updateVisibleList()
+    }, 200);
 
-    // wrapRef.current.addEventListener('scroll', throttleHandleScroll)
-    // window.addEventListener('resize', throttleHandleResize)
+    wrapRef.current.addEventListener('scroll', handleScroll)
     const resizeObserver = new ResizeObserver(() => {
-      throttleHandleResize()
+      handleResize()
     });
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(wrapRef.current);
     return () => {
-      if (!containerRef.current) {
+      if (!wrapRef.current) {
         return
       }
-      if (triggerRef.current) {
-        triggerObserver.unobserve(triggerRef.current);
-      }
       resizeObserver.disconnect();
-      // wrapRef.current!.removeEventListener('scroll', throttleHandleScroll)
-      // window.removeEventListener('resize', throttleHandleResize)
+      wrapRef.current!.removeEventListener('scroll', handleScroll)
     }
-  }, [])
-
+  }, [columnCount, gap])
   const loaderMoreItems = async () => {
     isLoadingRef.current = true
     setIsLoading(true)
@@ -131,8 +126,7 @@ const Waterfall: React.FC<WaterfallProps> = ({ columnCount = 3, gap = 16, getLis
         key: item.key
       };
     })
-    setItemPositions((prevPositions) =>
-      isReset ? newPositions : [...prevPositions, ...newPositions]);
+    itemPositions.current = isReset ? newPositions : [...itemPositions.current, ...newPositions];
     // 更新容器高度
     updateContainerHeight();
   }
@@ -140,21 +134,19 @@ const Waterfall: React.FC<WaterfallProps> = ({ columnCount = 3, gap = 16, getLis
   return (
     <div ref={wrapRef} className={styles['waterfall-wrapper']}>
       <div ref={containerRef} className={styles['waterfall-container']} style={{ height: containerHeight }}>
-        {itemPositions.map((item, index) => (
+        {visibleList.map((item, index) => (
           <div
-            key={index}
+            key={item.key}
             className={styles['waterfall-item']}
             style={{
               transform: `translate(${item.x}px, ${item.y}px)`,
               width: item.width,
               height: item.height,
             }}>
-            <img src={item.url} alt={`${index}`} />
+            <img src={item.url} alt={`${item.key}`} />
           </div>
         ))}
       </div>
-      {/* 底部触发器 */}
-      <div ref={triggerRef} style={{ height: 1, background: 'transparent' }}></div>
       {/* 底部状态 */}
       <div className={styles['waterfall-footer']} style={{ visibility: isLoading ? 'visible' : 'hidden' }}>
         <div>加载中...</div>

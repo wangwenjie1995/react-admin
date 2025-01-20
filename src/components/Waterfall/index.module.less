@@ -16,7 +16,7 @@
   transition: transform 0.3s ease;
   background: #f9f9f9;
   border: 1px solid #ddd;
-  overflow: hidden;
+  animation: OpacityAnimate 0.25s;
 }
 
 .waterfall-footer {
@@ -24,4 +24,16 @@
   padding: 16px;
   font-size: 14px;
   color: #666;
+}
+
+
+
+@keyframes OpacityAnimate {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
