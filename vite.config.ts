@@ -15,7 +15,7 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
 
   // this function can be converted to different typings
   const viteEnv: any = wrapperEnv(env)
-  const { VITE_PORT, VITE_DROP_CONSOLE } = viteEnv
+  const { VITE_PORT, VITE_DROP_CONSOLE, VITE_DROP_DEBUGGER } = viteEnv
 
   return {
     // 开发环境： 确保本地开发中资源加载正常，通常使用 /。
@@ -55,7 +55,8 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
         compress: {
           keep_infinity: true,
           // used to delete console and debugger in production environment
-          drop_console: VITE_DROP_CONSOLE
+          drop_console: VITE_DROP_CONSOLE,
+          drop_debugger: VITE_DROP_DEBUGGER
         }
       },
       chunkSizeWarningLimit: 2000

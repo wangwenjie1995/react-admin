@@ -2,6 +2,9 @@
 @import './variable/index.less';
 @import './public.less';
 @import './scroll-bar.less';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 // CSS resets
 * {
@@ -9,12 +12,13 @@
   margin: 0;
 }
 
-ul,li {
+ul,
+li {
   list-style: none;
 }
 
 p {
-  margin: 0!important;
+  margin: 0 !important;
 }
 
 a,
@@ -47,7 +51,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-family: Microsoft YaHei,Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Arial, sans-serif;
+  font-family: Microsoft YaHei, Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Arial, sans-serif;
   font-size: 14px;
   color: #222;
 }
@@ -60,7 +64,7 @@ img {
 }
 
 pre {
-  font-family: Consolas,Menlo,Courier,monospace;
+  font-family: Consolas, Menlo, Courier, monospace;
 }
 
 .fr {
@@ -72,6 +76,7 @@ pre {
 }
 
 .clear-fix {
+
   &:before,
   &:after {
     content: '';

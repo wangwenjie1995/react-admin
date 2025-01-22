@@ -38,7 +38,7 @@ var vite_config_default = defineConfig(({ command, mode }) => {
   const isBuild = command === "build";
   const env = loadEnv(mode, root);
   const viteEnv = wrapperEnv(env);
-  const { VITE_PORT, VITE_DROP_CONSOLE } = viteEnv;
+  const { VITE_PORT, VITE_DROP_CONSOLE, VITE_DROP_DEBUGGER } = viteEnv;
   return {
     // 开发环境： 确保本地开发中资源加载正常，通常使用 /。
     // 生产环境： 为了兼容各种部署方式（根目录或子目录），通常使用相对路径 './'。
@@ -77,7 +77,8 @@ var vite_config_default = defineConfig(({ command, mode }) => {
         compress: {
           keep_infinity: true,
           // used to delete console and debugger in production environment
-          drop_console: VITE_DROP_CONSOLE
+          drop_console: VITE_DROP_CONSOLE,
+          drop_debugger: VITE_DROP_DEBUGGER
         }
       },
       chunkSizeWarningLimit: 2e3
