@@ -27,6 +27,11 @@ export interface UserState {
   sessionTimeout?: boolean
   lastUpdateTime: number
   permissions: Permission[]
+  setToken: (token: string | undefined) => void
+  setUserInfo: (userInfo: any) => void
+  setPermissions: (permissions: Permission[]) => void
+  setSessionTimeout: (timeout: boolean) => void
+  resetState: () => void
 }
 
 export interface MenuOptions {

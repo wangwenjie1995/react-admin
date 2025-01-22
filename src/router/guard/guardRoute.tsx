@@ -2,8 +2,8 @@ import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { getAuthCache } from '@/utils/auth'
 import { TOKEN_KEY } from '@/enums/cacheEnum'
-import { useAppSelector } from '@/stores'
 import { Permission } from '@/stores/types'
+import useUserStore from '@/stores/userStore'
 const checkAutn = (permissions: Permission[], path: string): boolean => {
   for (const permission of permissions) {
     //首先检查父级路径
@@ -33,7 +33,7 @@ const checkAutn = (permissions: Permission[], path: string): boolean => {
 export const GuardRoute = ({ children }: { children: ReactNode }) => {
   const whiteList: string[] = ['/', '/home', '/login']
   const { pathname } = useLocation()
-  const { token, permissions } = useAppSelector(state => state.user)
+  const { token, permissions } = useUserStore()
   const getToken = (): string => {
     return token || getAuthCache<string>(TOKEN_KEY)
   }

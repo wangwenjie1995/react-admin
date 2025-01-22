@@ -19,6 +19,7 @@ import { searchRoute } from '@/utils'
 import { closeAllTags, closeTagByKey, closeTagsByType } from '@/stores/modules/tags'
 import classNames from 'classnames'
 import styles from './index.module.less'
+import useUserStore from '@/stores/userStore'
 
 const LayoutTags: FC = () => {
   const items: MenuProps['items'] = [
@@ -55,7 +56,7 @@ const LayoutTags: FC = () => {
   const dispatch = useAppDispatch()
 
   const [activeTag, setActiveTag] = useState(pathname)
-  const { permissions } = useAppSelector(state => state.user)
+  const { permissions } = useUserStore()
   useEffect(() => {
     const affixTags = initAffixTags(permissions)
     for (const tag of affixTags) {

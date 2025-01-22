@@ -8,7 +8,7 @@ import storage from 'redux-persist/lib/storage'
 import appSlice from './modules/app'
 import menuSlice from './modules/menu'
 import tagsSlice from './modules/tags'
-import userSlice from './modules/user'
+// import userSlice from './modules/user'
 
 const persistConfig = {
   key: 'redux-persist',
@@ -25,7 +25,7 @@ export const store: Store = configureStore({
     app: persistReducer(persistConfig, appSlice),
     menu: persistReducer(persistConfig, menuSlice),
     tags: persistReducer(persistConfig, tagsSlice),
-    user: persistReducer(persistConfig, userSlice)
+    // user: persistReducer(persistConfig, userSlice)
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

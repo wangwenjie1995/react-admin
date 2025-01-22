@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Form, Input, Checkbox, Button, message } from 'antd'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import { useAppSelector, useAppDispatch } from '@/stores'
-import { setToken, setUserInfo, setPermissions, setSessionTimeout } from '@/stores/modules/user'
+import useUserStore from '@/stores/userStore'
 import { getAuthCache } from '@/utils/auth'
 import { TOKEN_KEY } from '@/enums/cacheEnum'
 import { loginApi, getUserInfo } from '@/api'
@@ -14,12 +14,10 @@ import styles from './index.module.less'
 import { addFullPath } from '@/router/helpers'
 
 const LoginPage: FC = () => {
+  const { token, sessionTimeout, setToken, setUserInfo, setPermissions, setSessionTimeout } = useUserStore()
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
 
-  const dispatch = useAppDispatch()
-
-  const { token, sessionTimeout } = useAppSelector(state => state.user)
   const getToken = (): string => {
     return token || getAuthCache<string>(TOKEN_KEY)
   }
@@ -54,7 +52,7 @@ const LoginPage: FC = () => {
       const data = await loginApi(loginParams)
 
       // 保存 Token
-      dispatch(setToken(data?.token))
+      setToken(data?.token)
       return afterLoginAction(goHome)
     } catch (error) {
       return Promise.reject(error)
@@ -67,7 +65,7 @@ const LoginPage: FC = () => {
     const userInfo = await getUserInfoAction()
 
     if (sessionTimeout) {
-      dispatch(setSessionTimeout(false))
+      setSessionTimeout(false)
     } else {
       const redirect = searchParams.get('redirect')
       if (redirect) {
@@ -85,8 +83,8 @@ const LoginPage: FC = () => {
 
     const userInfo = await getUserInfo()
     userInfo.permissions = addFullPath(userInfo.permissions)
-    dispatch(setUserInfo(userInfo))
-    dispatch(setPermissions(userInfo.permissions))
+    setUserInfo(userInfo)
+    setPermissions(userInfo.permissions)
 
     return userInfo
   }

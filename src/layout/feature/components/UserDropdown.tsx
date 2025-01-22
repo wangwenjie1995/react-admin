@@ -7,10 +7,11 @@ import { TOKEN_KEY } from '@/enums/cacheEnum'
 import { useAppDispatch, useAppSelector } from '@/stores'
 import { useMessage } from '@/hooks/web/useMessage'
 import { logoutApi } from '@/api'
-import { resetState } from '@/stores/modules/user'
+import useUserStore from '@/stores/userStore'
 import headerImg from '@/assets/images/avatar.jpeg'
 
 export default function UserDropdown() {
+  const { resetState, token } = useUserStore()
   const items: MenuProps['items'] = [
     {
       key: 'lock',
@@ -45,8 +46,6 @@ export default function UserDropdown() {
 
   const navigate = useNavigate()
 
-  const dispatch = useAppDispatch()
-  const { token } = useAppSelector(state => state.user)
   const getToken = (): string => {
     return token || getAuthCache<string>(TOKEN_KEY)
   }
@@ -75,7 +74,7 @@ export default function UserDropdown() {
         createMessage.error('注销失败!')
       }
     }
-    dispatch(resetState())
+    resetState()
     clearAuthCache()
     goLogin && navigate('/login')
   }
