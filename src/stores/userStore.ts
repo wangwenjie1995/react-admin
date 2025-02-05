@@ -5,7 +5,8 @@ import { setAuthCache } from '@/utils/auth'
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware'
 
-const useUserStore = create(
+
+const useUserStore = create<UserState>()(
   persist(
     (set) => ({
       token: undefined,
