@@ -15,9 +15,7 @@ interface Position {
   x: number,
   y: number,
 }
-const Waterfall: React.FC<WaterfallProps> = ({ columnCount: propColumnCount = 4, gap = 16, getList }: WaterfallProps) => {
-  const columnCountRef = useRef(propColumnCount); // 使用 ref 来存储列数
-  const [columnCount, setColumnCount] = useState(propColumnCount);
+const Waterfall: React.FC<WaterfallProps> = ({ columnCount = 3, gap = 16, getList }: WaterfallProps) => {
   const wrapRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const itemsRef = useRef<any[]>([])
@@ -50,7 +48,6 @@ const Waterfall: React.FC<WaterfallProps> = ({ columnCount: propColumnCount = 4,
     await loaderMoreItems()
     updateVisibleList()
   }
-
   useEffect(() => {
     initData()
   }, [])
@@ -59,28 +56,14 @@ const Waterfall: React.FC<WaterfallProps> = ({ columnCount: propColumnCount = 4,
       return
     }
     // 防抖函数
-    const handleResize = () => {
-      const screenWidth = window.innerWidth;
-      let newColumnCount = columnCount; // 默认列数为当前列数
-      if (screenWidth < 600) {
-        newColumnCount = 2; // 小屏幕时显示 2 列
-      } else if (screenWidth < 1200) {
-        newColumnCount = 3; // 中等屏幕时显示 3 列
-      } else {
-        newColumnCount = 5; // 大屏幕时显示 4 列
-      }
-      // 如果列数发生变化，更新列数并调用布局更新
-      if (newColumnCount !== columnCount) {
-        setColumnCount(newColumnCount);
-        columnCountRef.current = newColumnCount
-      }
+    const handleResize = throttle(() => {
       if (!wrapRef.current) return;
       wrapRef.current.scrollTop = 0;
       // 重置每列的高度
-      columnHeights.current = Array(columnCountRef.current).fill(0);
+      columnHeights.current = Array(columnCount).fill(0);
       appendPositions(itemsRef.current, true)
       updateVisibleList()
-    };
+    }, 200);
     // 防抖函数
     const handleScroll = throttle(async () => {
       if (!wrapRef.current || isLoadingRef.current) return;
@@ -98,7 +81,6 @@ const Waterfall: React.FC<WaterfallProps> = ({ columnCount: propColumnCount = 4,
       handleResize()
     });
     resizeObserver.observe(wrapRef.current);
-    handleResize();
     return () => {
       if (!wrapRef.current) {
         return
@@ -124,7 +106,6 @@ const Waterfall: React.FC<WaterfallProps> = ({ columnCount: propColumnCount = 4,
   const appendPositions = (list: any[], isReset: boolean = false) => {
     if (!containerRef.current) return;
     // 容器宽度
-    const columnCount = columnCountRef.current
     const containerWidth = containerRef.current.clientWidth || containerRef.current.offsetWidth;
     const columnWidth = (containerWidth - (columnCount - 1) * gap) / columnCount; // 每列的宽度
 

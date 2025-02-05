@@ -24,7 +24,7 @@ const waterfallDemo: React.FC = () => {
   };
   return (
     <div className={'layout-page'}>
-      {/* <div className={'layout-tool'}>
+      <div className={'layout-tool'}>
         <Row align="middle" gutter={8} style={{ marginTop: 6, marginBottom: 6 }}>
           <Col>
             <Radio.Group value={columnCount} onChange={handleChange}>
@@ -35,7 +35,7 @@ const waterfallDemo: React.FC = () => {
             </Radio.Group>
           </Col>
         </Row>
-      </div> */}
+      </div>
       <div className={'layout-container'} ref={containerRef}>
         <Waterfall getList={getList} columnCount={columnCount} gap={16}></Waterfall>
       </div>
