@@ -1,14 +1,13 @@
 import type { FC } from 'react'
 import { Space } from 'antd'
-import { useAppSelector } from '@/stores'
 import classNames from 'classnames'
 import styles from './app-logo.module.less'
 import logoImg from '@/assets/images/logo.png'
-import logoName from '@/assets/images/name_white.png'
+import useAppStore from '@/stores/modules/appStore'
 
 const AppLogo: FC = () => {
-  const getMenuFold = useAppSelector(state => state.app.appConfig?.menuSetting?.menuFold)
-
+  const appConfig = useAppStore(state => state.appConfig)
+  const getMenuFold = appConfig?.menuSetting?.menuFold
   return (
     <div className={classNames('anticon', styles['app-logo'])}>
       <Space>

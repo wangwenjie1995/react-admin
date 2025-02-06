@@ -9,11 +9,10 @@ export default function LayoutBreadcrumb() {
   const { t } = useTranslation()
   const [breadcrumbs, setBreadcrumbs] = useState<any[]>([])
   const { pathname } = useLocation()
-  const { menuList } = useMenuStore()
-  const getMenuList = menuList
+  const menuList = useMenuStore((state) => state.menuList);
 
   useEffect(() => {
-    const matchRouteList = matchRoutes(getMenuList, pathname) || []
+    const matchRouteList = matchRoutes(menuList, pathname) || []
     const breadcrumbList = matchRouteList.map((item: any) => {
       const { name, icon = '', tKey } = item?.route
       return {
@@ -26,7 +25,7 @@ export default function LayoutBreadcrumb() {
       }
     })
     setBreadcrumbs(breadcrumbList)
-  }, [pathname, t])
+  }, [pathname, t, menuList])
 
   return (
     <div className='flex-center-v' style={{ padding: '0 16px' }}>

@@ -3,10 +3,7 @@ import { type FC, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Form, Input, Checkbox, Button, message } from 'antd'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
-import { useAppSelector, useAppDispatch } from '@/stores'
 import useUserStore from '@/stores/userStore'
-import { getAuthCache } from '@/utils/auth'
-import { TOKEN_KEY } from '@/enums/cacheEnum'
 import { loginApi, getUserInfo } from '@/api'
 import logoIcon from '@/assets/images/logo_name.png'
 import classNames from 'classnames'
@@ -14,13 +11,13 @@ import styles from './index.module.less'
 import { addFullPath } from '@/router/helpers'
 
 const LoginPage: FC = () => {
-  const { token, sessionTimeout, setToken, setUserInfo, setPermissions, setSessionTimeout } = useUserStore()
+  const sessionTimeout = useUserStore((state) => state.sessionTimeout);
+  const setToken = useUserStore((state) => state.setToken);
+  const setUserInfo = useUserStore((state) => state.setUserInfo);
+  const setPermissions = useUserStore((state) => state.setPermissions);
+  const setSessionTimeout = useUserStore((state) => state.setSessionTimeout);
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
-
-  const getToken = (): string => {
-    return token || getAuthCache<string>(TOKEN_KEY)
-  }
 
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -53,6 +50,7 @@ const LoginPage: FC = () => {
 
       // 保存 Token
       setToken(data?.token)
+      console.log('setToken', data?.token)
       return afterLoginAction(goHome)
     } catch (error) {
       return Promise.reject(error)
@@ -60,10 +58,11 @@ const LoginPage: FC = () => {
   }
 
   const afterLoginAction = async (goHome?: boolean): Promise<UserInfo | null> => {
-    if (!getToken()) return null
+    const token = useUserStore.getState().token || ''
+    if (!token) return null
 
     const userInfo = await getUserInfoAction()
-
+    console.log(userInfo, sessionTimeout)
     if (sessionTimeout) {
       setSessionTimeout(false)
     } else {
@@ -79,7 +78,8 @@ const LoginPage: FC = () => {
   }
 
   const getUserInfoAction = async (): Promise<UserInfo | null> => {
-    if (!getToken()) return null
+    const token = useUserStore.getState().token || ''
+    if (!token) return null
 
     const userInfo = await getUserInfo()
     userInfo.permissions = addFullPath(userInfo.permissions)

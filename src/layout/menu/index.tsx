@@ -28,7 +28,7 @@ const getItem = (
 
 const LayoutMenu = () => {
   const { pathname } = useLocation()
-  const { setMenuList: setMenuListAction } = useMenuStore()  // Using Zustand state
+  const setMenuListAction = useMenuStore((state) => state.setMenuList);
   const [loading, setLoading] = useState(false)
   const [menuList, setMenuList] = useState<MenuItem[]>([])
   const [openKeys, setOpenKeys] = useState<string[]>([])

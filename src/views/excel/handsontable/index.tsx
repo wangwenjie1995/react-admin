@@ -12,9 +12,9 @@ import {
   getLanguagesDictionaries,
   zhCN,
 } from 'handsontable/i18n';
-import { useAppSelector } from '@/stores';
 import { LanguageEnum } from '@/enums/appEnum';
 import { registerAllModules } from 'handsontable/registry';
+import useAppStore from '@/stores/modules/appStore';
 registerAllModules();
 registerLanguageDictionary(zhCN);
 // 定义语言映射
@@ -107,7 +107,7 @@ const columns = [
 ]
 
 const ExcelTable: React.FC = () => {
-  const reduxLanguage = useAppSelector((state) => state.app.language) as LanguageEnum
+  const reduxLanguage = useAppStore((state) => state.language)
   const [language, setLanguage] = useState(languageMap[reduxLanguage] || 'zh-CN')
   const hotRef = useRef<HotTableRef>(null)
   const hot = hotRef.current?.hotInstance;

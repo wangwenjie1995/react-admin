@@ -6,14 +6,15 @@ import LayoutTags from './tags'
 import { AppLogo } from '@/components/AppLogo'
 import './index.less'
 import { useTitle } from '@/hooks/web/useTitle'
-import { useAppSelector } from '@/stores'
+import useAppStore from '@/stores/modules/appStore'
 
 export const BasicLayout = () => {
   useTitle()
   const { Sider, Content } = Layout
   const { state } = useLocation()
   const { key = 'key' } = state || {}
-  const getMenuFold = useAppSelector(st => st.app.appConfig?.menuSetting?.menuFold)
+  const getMenuFold = useAppStore(st => st.appConfig?.menuSetting?.menuFold)
+
   return (
     <Layout className='layout_wrapper'>
       <Sider width={210} trigger={null} collapsed={getMenuFold} style={{ height: '100vh' }}>

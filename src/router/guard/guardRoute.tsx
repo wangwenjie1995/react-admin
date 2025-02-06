@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { getAuthCache } from '@/utils/auth'
-import { TOKEN_KEY } from '@/enums/cacheEnum'
 import { Permission } from '@/stores/types'
 import useUserStore from '@/stores/userStore'
 const checkAutn = (permissions: Permission[], path: string): boolean => {
@@ -33,12 +31,9 @@ const checkAutn = (permissions: Permission[], path: string): boolean => {
 export const GuardRoute = ({ children }: { children: ReactNode }) => {
   const whiteList: string[] = ['/', '/home', '/login']
   const { pathname } = useLocation()
-  const { token, permissions } = useUserStore()
-  const getToken = (): string => {
-    return token || getAuthCache<string>(TOKEN_KEY)
-  }
-
-  if (!getToken()) {
+  const permissions = useUserStore((state) => state.permissions);
+  const token = useUserStore((state) => state.token)
+  if (!token) {
     if (whiteList.includes(pathname)) {
       return <Navigate to='/login' replace />
     } else {

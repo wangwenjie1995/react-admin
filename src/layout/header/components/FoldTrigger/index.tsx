@@ -1,15 +1,16 @@
-import { useAppSelector, useAppDispatch } from '@/stores'
-import { setAppConfig } from '@/stores/modules/app'
 import SvgIcon from '@/components/SvgIcon'
 import style from './index.module.less'
 import classNames from 'classnames'
+import useAppStore from '@/stores/modules/appStore'
+import { MenuSetting } from '@/types/config'
 
 export default function FoldTrigger() {
-  const getMenuFold = useAppSelector(state => state.app.appConfig?.menuSetting?.menuFold)
-  const dispatch = useAppDispatch()
+  const appConfig = useAppStore(state => state.appConfig)
+  const getMenuFold = appConfig?.menuSetting?.menuFold
+  const setAppConfig = useAppStore(state => state.setAppConfig)
 
   function toggledMenuFold() {
-    dispatch(setAppConfig({ menuSetting: { menuFold: !getMenuFold } }))
+    setAppConfig?.({ menuSetting: { menuFold: !getMenuFold } as MenuSetting })
   }
 
   return (

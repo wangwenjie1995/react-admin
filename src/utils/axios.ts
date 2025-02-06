@@ -1,7 +1,8 @@
 import type { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import axios from 'axios'
 import { message } from 'antd'
-import { getToken, clearAuthCache } from '@/utils/auth'
+import { clearAuthCache } from '@/utils/auth'
+import useUserStore from '@/stores/userStore'
 
 // Create axios instance
 const service = axios.create({
@@ -21,11 +22,11 @@ const handleError = (error: AxiosError): Promise<AxiosError> => {
 
 // Request interceptors configuration
 service.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = getToken()
+  const token = useUserStore.getState().token
   if (token) {
-    ;(config as Recordable).headers['Authorization'] = `${token}`
+    (config as Recordable).headers['Authorization'] = `${token}`
   }
-  ;(config as Recordable).headers['Content-Type'] = 'application/json'
+  (config as Recordable).headers['Content-Type'] = 'application/json'
   return config
 }, handleError)
 

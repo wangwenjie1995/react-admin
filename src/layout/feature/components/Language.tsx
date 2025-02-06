@@ -1,25 +1,22 @@
 import { Dropdown, Tooltip } from "antd";
 import SvgIcon from '@/components/SvgIcon'
 import { LanguageEnum } from "@/enums/appEnum";
-import { setLanguage } from "@/stores/modules/app";
-import { useAppDispatch, useAppSelector } from "@/stores";
+import useAppStore from "@/stores/modules/appStore";
 
 const LanguageIcon = (props: any) => {
-  const { language } = useAppSelector((state) => ({
-    language: state.app.language
-  }))
-  const dispatch = useAppDispatch()
+  const language = useAppStore((state) => state.language)
+  const setLanguage = useAppStore((state) => state.setLanguage)
   const items = [
     {
       key: '1',
       label: <span>简体中文</span>,
-      onClick: () => dispatch(setLanguage(LanguageEnum.ZH)),
+      onClick: () => setLanguage?.(LanguageEnum.ZH),
       disabled: language === LanguageEnum.ZH
     },
     {
       key: '2',
       label: <span>English</span>,
-      onClick: () => dispatch(setLanguage(LanguageEnum.EN)),
+      onClick: () => setLanguage?.(LanguageEnum.EN),
       disabled: language === LanguageEnum.EN
     }
   ]

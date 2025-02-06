@@ -2,10 +2,9 @@ import type { RouteObject } from './types'
 import { Navigate, redirect, createBrowserRouter } from 'react-router-dom'
 import { genFullPath } from './helpers'
 import { ExceptionEnum } from '@/enums/exceptionEnum'
-import { getAuthCache } from '@/utils/auth'
-import { TOKEN_KEY } from '@/enums/cacheEnum'
 import LoginPage from '@/views/login'
 import PageException from '@/views/exception'
+import useUserStore from '@/stores/userStore'
 
 const metaRoutes = import.meta.glob('./routes/*.tsx', { eager: true }) as Recordable
 
@@ -33,7 +32,8 @@ const rootRoutes: RouteObject[] = [
       key: 'login'
     },
     loader: () => {
-      if (getAuthCache<string>(TOKEN_KEY)) {
+      const token = useUserStore.getState().token || ''
+      if (token) {
         return redirect('/')
       }
       return null

@@ -20,8 +20,11 @@ import styles from './index.module.less'
 import useUserStore from '@/stores/userStore'
 
 const LayoutTags: FC = () => {
-  const { visitedTags, addVisitedTags, closeAllTags, closeTagByKey, closeTagsByType } = useTagsStore()
-  console.log(visitedTags)
+  const visitedTags = useTagsStore((state) => state.visitedTags);
+  const addVisitedTags = useTagsStore((state) => state.addVisitedTags);
+  const closeAllTags = useTagsStore((state) => state.closeAllTags);
+  const closeTagByKey = useTagsStore((state) => state.closeTagByKey);
+  const closeTagsByType = useTagsStore((state) => state.closeTagsByType);
   const items: MenuProps['items'] = [
     { key: 'left', label: '关闭左侧' },
     { key: 'right', label: '关闭右侧' },
@@ -54,7 +57,7 @@ const LayoutTags: FC = () => {
   const navigate = useNavigate()
 
   const [activeTag, setActiveTag] = useState(pathname)
-  const { permissions } = useUserStore()
+  const permissions = useUserStore((state) => state.permissions);
   useEffect(() => {
     const affixTags = initAffixTags(permissions)
     for (const tag of affixTags) {
@@ -68,7 +71,7 @@ const LayoutTags: FC = () => {
       addVisitedTags(currRoute)
     }
     setActiveTag(pathname)
-  }, [pathname])
+  }, [pathname, permissions])
 
   useEffect(() => {
     const tagNodeList = tagsMainCont.current?.childNodes as unknown as Array<HTMLElement>

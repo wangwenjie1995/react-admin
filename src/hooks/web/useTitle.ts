@@ -7,13 +7,13 @@ import useUserStore from '@/stores/userStore'
 // 监听页面变化和动态改变网站标题
 export function useTitle() {
   const [pageTitle, setPageTitle] = useState('bigoc')
-  const { permissions } = useUserStore()
+  const permissions = useUserStore((state) => state.permissions);
   const { pathname } = useLocation()
 
   useEffect(() => {
     const currRoute = searchRoute(pathname, permissions)
     setPageTitle(currRoute.title)
-  }, [pathname])
+  }, [pathname, permissions])
 
   usePageTitle(pageTitle)
 }

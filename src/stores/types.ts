@@ -70,4 +70,10 @@ export interface AppState {
   appConfig: AppConfig | null,
 
   language: LanguageEnum
+
+  setAppMode?: (appMode: AppModeEnum | undefined) => void
+  setThemeMode?: (themeMode: ThemeEnum) => void
+  setAppConfig?: (appConfig: Partial<AppConfig>) => void
+  setLanguage?: (language: LanguageEnum) => void
+  resetState?: () => void
 }
