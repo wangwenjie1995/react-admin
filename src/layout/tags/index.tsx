@@ -13,15 +13,15 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useFullscreen } from 'ahooks'
 import { TagItem } from './components'
-import { useAppSelector, useAppDispatch } from '@/stores'
-import { addVisitedTags } from '@/stores/modules/tags'
+import useTagsStore from '@/stores/modules/tags'
 import { searchRoute } from '@/utils'
-import { closeAllTags, closeTagByKey, closeTagsByType } from '@/stores/modules/tags'
 import classNames from 'classnames'
 import styles from './index.module.less'
 import useUserStore from '@/stores/userStore'
 
 const LayoutTags: FC = () => {
+  const { visitedTags, addVisitedTags, closeAllTags, closeTagByKey, closeTagsByType } = useTagsStore()
+  console.log(visitedTags)
   const items: MenuProps['items'] = [
     { key: 'left', label: '关闭左侧' },
     { key: 'right', label: '关闭右侧' },
@@ -32,14 +32,14 @@ const LayoutTags: FC = () => {
   const onClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'all') {
       // @ts-ignore
-      dispatch(closeAllTags()).then(({ payload }) => {
+      closeAllTags().then(({ payload }) => {
         const lastTag = payload.slice(-1)[0]
         if (activeTag !== lastTag?.fullPath) {
           navigate(lastTag?.fullPath)
         }
       })
     } else {
-      dispatch(closeTagsByType({ type: key, path: activeTag }))
+      closeTagsByType(key, activeTag)
     }
   }
 
@@ -52,22 +52,20 @@ const LayoutTags: FC = () => {
 
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const visitedTags = useAppSelector(state => state.tags.visitedTags)
-  const dispatch = useAppDispatch()
 
   const [activeTag, setActiveTag] = useState(pathname)
   const { permissions } = useUserStore()
   useEffect(() => {
     const affixTags = initAffixTags(permissions)
     for (const tag of affixTags) {
-      dispatch(addVisitedTags(tag))
+      addVisitedTags(tag)
     }
   }, [])
 
   useEffect(() => {
     const currRoute = searchRoute(pathname, permissions)
     if (currRoute) {
-      dispatch(addVisitedTags(currRoute))
+      addVisitedTags(currRoute)
     }
     setActiveTag(pathname)
   }, [pathname])
@@ -162,7 +160,7 @@ const LayoutTags: FC = () => {
 
   const handleCloseTag = (path: string) => {
     // @ts-ignore
-    dispatch(closeTagByKey(path)).then(({ payload }) => {
+    closeTagByKey(path).then(({ payload }) => {
       let currTag: RouteObject
       const { tagIndex, tagsList } = payload
       const tagLen = tagsList.length
@@ -186,7 +184,7 @@ const LayoutTags: FC = () => {
   }
   const handleReload = () => {
     // 刷新当前路由，页面不刷新
-    const index = visitedTags.findIndex((tab: { fullPath: string }) => tab.fullPath === activeTag)
+    const index = visitedTags.findIndex((tab: RouteObject) => tab.fullPath === activeTag)
     if (index >= 0) {
       // 这个是react的特性，key变了，组件会卸载重新渲染
       navigate(activeTag, { replace: true, state: { key: getKey() } })

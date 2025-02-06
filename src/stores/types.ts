@@ -46,11 +46,20 @@ export interface MenuOptions {
 export interface MenuState {
   menuList: MenuOptions[]
   isCollapse: boolean
+  setMenuList: (menuList: any[]) => void
+  updateCollapse: (isCollapse: boolean) => void
 }
 
 export interface TagsState {
   visitedTags: RouteObject[]
   cachedTags: Set<string>
+  addVisitedTags: (tag: RouteObject) => void;
+  updateVisitedTags: (tags: RouteObject[]) => void;
+  closeTagsByType: (type: string, path: string) => void;
+  updateCacheTags: () => void;
+  clearCacheTags: () => void;
+  closeTagByKey: (path: string) => Promise<{ tagIndex: number; tagsList: RouteObject[] }>;
+  closeAllTags: () => Promise<RouteObject[]>;
 }
 
 export interface AppState {

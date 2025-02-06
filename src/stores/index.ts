@@ -6,8 +6,8 @@ import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 import appSlice from './modules/app'
-import menuSlice from './modules/menu'
-import tagsSlice from './modules/tags'
+// import menuSlice from './modules/menu'
+// import tagsSlice from './modules/tags'
 // import userSlice from './modules/user'
 
 const persistConfig = {
@@ -23,8 +23,8 @@ const persistConfig = {
 export const store: Store = configureStore({
   reducer: {
     app: persistReducer(persistConfig, appSlice),
-    menu: persistReducer(persistConfig, menuSlice),
-    tags: persistReducer(persistConfig, tagsSlice),
+    // menu: persistReducer(persistConfig, menuSlice),
+    // tags: persistReducer(persistConfig, tagsSlice),
     // user: persistReducer(persistConfig, userSlice)
   },
   middleware: getDefaultMiddleware =>

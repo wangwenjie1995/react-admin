@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Breadcrumb } from 'antd'
 import { useLocation, matchRoutes } from 'react-router-dom'
-import { useAppSelector } from '@/stores'
 import SvgIcon from '@/components/SvgIcon'
 import { useTranslation } from 'react-i18next'
+import useMenuStore from '@/stores/modules/menu'
 
 export default function LayoutBreadcrumb() {
   const { t } = useTranslation()
   const [breadcrumbs, setBreadcrumbs] = useState<any[]>([])
   const { pathname } = useLocation()
-  const getMenuList = useAppSelector(state => state.menu.menuList)
+  const { menuList } = useMenuStore()
+  const getMenuList = menuList
 
   useEffect(() => {
     const matchRouteList = matchRoutes(getMenuList, pathname) || []

@@ -1,11 +1,10 @@
 import type { MenuProps } from 'antd'
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { connect } from 'react-redux'
 import { Menu, Spin } from 'antd'
 import { getAsyncMenus } from '@/router/menus'
 import type { AppMenu } from '@/router/types'
-import { setMenuList } from '@/stores/modules/menu'
+import useMenuStore from '@/stores/modules/menu'
 import { getOpenKeys } from '@/utils/helper/menuHelper'
 import SvgIcon from '@/components/SvgIcon'
 
@@ -27,9 +26,9 @@ const getItem = (
   } as MenuItem
 }
 
-const LayoutMenu = (props: any) => {
+const LayoutMenu = () => {
   const { pathname } = useLocation()
-  const { setMenuList: setMenuListAction } = props
+  const { setMenuList: setMenuListAction } = useMenuStore()  // Using Zustand state
   const [loading, setLoading] = useState(false)
   const [menuList, setMenuList] = useState<MenuItem[]>([])
   const [openKeys, setOpenKeys] = useState<string[]>([])
@@ -107,7 +106,4 @@ const LayoutMenu = (props: any) => {
   )
 }
 
-const mapStateToProps = (state: any) => state.menu
-const mapDispatchToProps = { setMenuList }
-
-export default connect(mapStateToProps, mapDispatchToProps)(LayoutMenu)
+export default LayoutMenu
