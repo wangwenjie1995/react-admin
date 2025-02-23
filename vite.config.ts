@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import { viteMockServe } from 'vite-plugin-mock'
+import ViteCdnImport from 'vite-plugin-cdn-import'
 import { wrapperEnv } from './build/utils'
 // 需要安装 @typings/node 插件
 import { resolve } from 'path'
@@ -30,6 +31,9 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
     },
     plugins: [
       react(),
+      ViteCdnImport({
+        modules: ['react', 'react-dom', 'axios']
+      }),
       createSvgIconsPlugin({
         iconDirs: [resolve(process.cwd(), 'src/assets/icons')],
         symbolId: 'icon-[dir]-[name]'
@@ -44,9 +48,8 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
 
           setupProdMockServer()
           `
-      })
+      }),
     ],
-
     build: {
       target: 'es2015',
       cssTarget: 'chrome86',
@@ -59,9 +62,18 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
           drop_debugger: VITE_DROP_DEBUGGER
         }
       },
-      chunkSizeWarningLimit: 2000
+      chunkSizeWarningLimit: 2000,
+      modulePreload: false,
+      rollupOptions: {
+        external: ['react', 'react-dom', 'axios'], // 标记为外部依赖，避免打包到最终输出文件中
+        output: {
+          // 强制拆分 chunk，使关键文件被标记为 preload
+          manualChunks: {
+            vendor: ['react-router-dom'], // 举例：提取第三方库
+          },
+        },
+      },
     },
-
     resolve: {
       alias: {
         '@': resolve(__dirname, './src'),

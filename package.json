@@ -100,6 +100,7 @@
     "terser": "^5.24.0",
     "typescript": "5.7.2",
     "vite": "^5.0",
+    "vite-plugin-cdn-import": "^1.0.1",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-mock": "2.9.8",
     "vite-plugin-svg-icons": "^2.0.1",
