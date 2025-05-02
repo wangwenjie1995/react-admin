@@ -1,84 +1,129 @@
-<p align="center">
-  <a href="https://github.com/facebook/react">
-    <img src="https://img.shields.io/badge/react-18.2.0-brightgreen.svg" alt="react">
-  </a>
-  <a href="https://github.com/remix-run/react-router">
-    <img src="https://img.shields.io/badge/react_router-6.19.0-brightgreen.svg" alt="react-router">
-  </a>
-  <a href="https://github.com/reduxjs/redux-toolkit">
-    <img src="https://img.shields.io/badge/react_redux-8.1.3-brightgreen.svg" alt="redux-toolkit">
-  </a>
-  <a href="https://github.com/vitejs/vite">
-    <img src="https://img.shields.io/badge/vite-4.5.0-brightgreen.svg" alt="vite">
-  </a>
-  <a href="https://github.com/ant-design/ant-design">
-    <img src="https://img.shields.io/badge/antd-5.11.2-brightgreen.svg" alt="antd">
-  </a>
- <a href="https://github.com/microsoft/TypeScript">
-    <img src="https://img.shields.io/badge/typescript-5.2.2-brightgreen.svg" alt="typescript">
-  </a>
-  <a href="https://github.com/less">
-    <img src="https://img.shields.io/badge/less-4.2.0-brightgreen.svg" alt="less">
-  </a>
-</p>  
+# React项目
 
-**中文** | [English](./README.en-US.md)
+### 介绍 📖
 
-## 简介
+基于 React18、React-Router v6、Zustand 、TypeScript、Vite4、Ant-Design
 
-#### react-admin是一个基于react18 + ant-design5的后台管理系统的解决方案，它使用了最新的前端技术栈，并且提供了丰富的功能组件模块，可以帮助你快速搭建企业级中后台的前端架构。
+### 一、在线预览地址
 
-## 特性
+- Link：http://www.bigoc.cn
 
-- **技术栈**：使用 React18、Vite4、TSX 等前端前沿技术开发
-- **主题**：可配置的主题色
-- **国际化**：内置完善的国际化方案
-- **Mock 数据** 内置 Mock 数据方案
+### 三、🔨🔨🔨 项目功能
 
-## 预览
+- 🚀 采用最新技术找开发：React18、React-Router v6、React-Hooks、TypeScript、Vite4.4
+- 🚀 采用 Vite4 作为项目开发、打包工具（配置了 Gzip 打包、跨域代理、CDN）
+- 🚀 整个项目集成了 TypeScript
+- 🚀 使用 Zustand 做状态管理
+- 🚀 使用 TypeScript 对 Axios 二次封装 （错误拦截、常用请求封装、全局请求 Loading、取消重复请求、refreshToken）
+- 🚀 支持 Antd 组件大小切换、暗黑 && 灰色 && 色弱模式、i18n 国际化
+- 🚀 使用 Route loader、lazyLoad 管理路由权限配置
+- 🚀 支持 React-Router v6 路由懒加载配置、菜单手风琴模式、无限级菜单、多标签页、面包屑导航
+- 🚀 使用 Prettier 统一格式化代码，集成 Eslint、Stylelint 代码校验规范（项目规范配置）
+- 🚀 使用 husky、lint-staged、commitlint、commitizen、cz-git 规范提交信息（项目规范配置）
 
-> ##### 演示地址：[https://www.bigoc.cn](https://www.bigoc.cn)
->
+### 四、安装使用步骤 📑
 
-## 开发
+- **Clone：**
 
-```bash
-// 克隆项目
+```text
+# GitHub
 git clone https://github.com/wangwenjie1995/react-admin.git
+```
 
-// 安装依赖
+- **Install：**
+
+```text
 pnpm install
 
-// 开发
+```
+
+- **Run：**
+
+```text
 pnpm run serve
 ```
 
-## 构建
+- **Build：**
 
-```bash
-// 构建
+```text
+# 打包部署环境
 pnpm run build
+
 ```
 
-## 浏览器支持
+```text
+# 打包mock测试环境
+pnpm run build:test
 
-本地开发推荐使用`Chrome 80+` 浏览器
+```
 
-支持现代浏览器, 不支持 IE
+- **Lint：**
 
-| [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt=" Edge" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>IE | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt=" Edge" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Edge | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Firefox | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" alt="Chrome" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Chrome | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/safari/safari_48x48.png" alt="Safari" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Safari |
-| :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-|                         not support                          |                       last 2 versions                        |                       last 2 versions                        |                       last 2 versions                        |                       last 2 versions                        |
+```text
+# eslint 检测代码
+pnpm run lint:eslint
 
-## Git 贡献提交规范
+# prettier 格式化代码
+pnpm run lint:prettier
 
-- `feat` 增加新功能
-- `fix` 修复问题/BUG
-- `style` 代码风格相关无影响运行结果的
-- `perf` 优化/性能提升
-- `refactor` 重构
-- `revert` 撤销修改
-- `test` 测试相关
-- `docs` 文档/注释
-- `chore` 依赖更新/脚手架配置修改等
+# stylelint 格式化代码
+pnpm run lint:stylelint
 
+```
+
+### 五、文件资源目录 📚
+
+```text
+React-vite-admin
+├─ .vscode                # vscode推荐配置
+├─ public                 # 静态资源文件（忽略打包）
+├─ src
+│  ├─ api                 # API 接口管理
+│  ├─ assets              # 静态资源文件
+│  ├─ components          # 全局组件
+│  ├─ config              # 全局配置项
+│  ├─ enums               # 项目枚举
+│  ├─ hooks               # 常用 Hooks
+│  ├─ language            # 语言国际化
+│  ├─ layout              # 框架布局
+│  ├─ router              # 路由管理
+│  ├─ store               # zustand store
+│  ├─ styles              # 全局样式
+│  ├─ types               # 全局 ts 声明
+│  ├─ utils               # 工具库(utils,http)
+│  ├─ views               # 项目所有页面
+│  ├─ mock                # 模拟接口拦截
+│  ├─ App.tsx             # 入口页面
+│  ├─ main.tsx            # 入口文件
+│  └─ env.d.ts            # vite 声明文件
+├─ .editorconfig          # 编辑器配置（格式化）
+├─ .env                   # vite 常用配置
+├─ .env.development       # 开发环境配置
+├─ .env.production        # 生产环境配置
+├─ .env.test              # 测试环境配置
+├─ .eslintignore          # 忽略 Eslint 校验
+├─ .eslintrc.json           # Eslint 校验配置
+├─ .gitignore             # git 提交忽略
+├─ .prettierignore        # 忽略 prettier 格式化
+├─ .prettierrc.json         # prettier 配置
+├─ .stylelintignore       # 忽略 stylelint 格式化
+├─ .stylelintrc.json        # stylelint 样式格式化配置
+├─ CHANGELOG.md           # 项目更新日志
+├─ commitlint.config.json   # git 提交规范配置
+├─ index.html             # 入口 html
+├─ pmpm-lock.yaml       # 依赖包包版本锁
+├─ package.json           # 依赖包管理
+├─ README.md              # README 介绍
+├─ tsconfig.json          # typescript 全局配置
+├─ tsconfig.node.json     # typescript node配置
+└─ vite.config.ts         # vite 配置
+```
+
+### 六、浏览器支持
+
+- 本地开发推荐使用 Chrome 最新版浏览器 [Download](https://www.google.com/intl/zh-CN/chrome/)。
+- 生产环境支持现代浏览器，不在支持 IE 浏览器，更多浏览器可以查看 [Can I Use Es Module](https://caniuse.com/?search=ESModule)。
+
+### 七、项目后台接口 🧩
+
+项目后台接口采用本地 Mock 数据

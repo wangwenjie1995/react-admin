@@ -1,4 +1,3 @@
-import { remove } from 'lodash-es'
 import { isObject } from './is'
 import { LanguageEnum } from '@/enums/appEnum'
 
@@ -46,11 +45,13 @@ export function deepMerge<T = any>(src: any = {}, target: any = {}): T {
 }
 
 export const getBrowserLang = () => {
-  let browserLang = navigator.language;
+  let browserLang = navigator.language
   let defaultBrowserLang
-  if (browserLang.toLowerCase() === 'cn' ||
+  if (
+    browserLang.toLowerCase() === 'cn' ||
     browserLang.toLowerCase() === 'zh' ||
-    browserLang.toLowerCase() === 'zh-cn') {
+    browserLang.toLowerCase() === 'zh-cn'
+  ) {
     defaultBrowserLang = LanguageEnum.ZH
   } else {
     defaultBrowserLang = LanguageEnum.EN
@@ -97,23 +98,23 @@ export const onMoveRequestAnimation = (callback: (event: MouseEvent) => void, re
   const loop = () => {
     if (isMoving && lastEvent) {
       callback(lastEvent) //处理最新的鼠标事件
-      isMoving = false; // 重置标记
+      isMoving = false // 重置标记
     }
     animationFrameId = requestAnimationFrame(loop) //循环监听
   }
   const remove = () => {
-    window.removeEventListener("mousemove", moveEvent);
-    window.removeEventListener("mouseup", remove);
-    window.removeEventListener("contextmenu", remove);
+    window.removeEventListener('mousemove', moveEvent)
+    window.removeEventListener('mouseup', remove)
+    window.removeEventListener('contextmenu', remove)
     if (animationFrameId !== null) {
-      cancelAnimationFrame(animationFrameId); // 取消帧循环
-      animationFrameId = null;
+      cancelAnimationFrame(animationFrameId) // 取消帧循环
+      animationFrameId = null
     }
-    removeCallback?.();
+    removeCallback?.()
   }
-  window.addEventListener("mousemove", moveEvent);
-  window.addEventListener("mouseup", remove); // 鼠标抬起时清理
-  window.addEventListener("contextmenu", remove); // 右键菜单触发时清理
+  window.addEventListener('mousemove', moveEvent)
+  window.addEventListener('mouseup', remove) // 鼠标抬起时清理
+  window.addEventListener('contextmenu', remove) // 右键菜单触发时清理
   //启动帧循环
   animationFrameId = requestAnimationFrame(loop)
   return remove //返回清理函数

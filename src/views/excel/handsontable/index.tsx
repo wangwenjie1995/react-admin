@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Card, Button, Row, Col, Radio, Upload } from "antd"
 import { HotTable, HotTableRef } from '@handsontable/react-wrapper';
 import Handsontable from 'handsontable/base';
-import { HyperFormula } from 'hyperformula';
 import { PageWrapper } from '@/components/Page'
 import styles from './handsontable.module.less'
 import 'handsontable/styles/handsontable.min.css';

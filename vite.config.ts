@@ -2,18 +2,22 @@ import type { ConfigEnv, UserConfig } from 'vite'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+import { createHtmlPlugin } from 'vite-plugin-html'
 import { viteMockServe } from 'vite-plugin-mock'
 import ViteCdnImport from 'vite-plugin-cdn-import'
-import { viteExternalsPlugin } from 'vite-plugin-externals';
-// import { visualizer } from 'rollup-plugin-visualizer';
+import { viteExternalsPlugin } from 'vite-plugin-externals'
+import { visualizer } from 'rollup-plugin-visualizer'
 import { wrapperEnv } from './build/utils'
 import cdnConfigs from './cdn.config'
 // 需要安装 @typings/node 插件
 import { resolve } from 'path'
-const cdnConfigsObj = cdnConfigs.reduce((prev: Record<string, string>, cur) => {
-  prev[cur.name] = cur.var;
-  return prev;
-}, { cesium: 'Cesium' })
+const cdnConfigsObj = cdnConfigs.reduce(
+  (prev: Record<string, string>, cur) => {
+    prev[cur.name] = cur.var
+    return prev
+  },
+  { cesium: 'Cesium' }
+)
 /** @type {import('vite').UserConfig} */
 export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
   const root = process.cwd()
@@ -36,10 +40,12 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       open: true,
       port: VITE_PORT
     },
+    // define: {
+    //   CESIUM_BASE_URL: JSON.stringify(`/Cesium`)
+    // },
     plugins: [
       react(),
       ViteCdnImport({
-        // modules: ['react', 'react-dom', 'axios'],
         modules: cdnConfigs.map(item => item)
       }),
       createSvgIconsPlugin({
@@ -58,15 +64,18 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
           `
       }),
       isBuild && viteExternalsPlugin(cdnConfigsObj),
-      // visualizer({
-      //   filename: 'state.html',
-      //   open: true //如果存在本地服务端口，将在打包后自动展示
-      // })
+      visualizer({
+        filename: 'state.html',
+        open: true //如果存在本地服务端口，将在打包后自动展示
+      })
     ].filter(Boolean),
     build: {
       target: 'es2015',
       cssTarget: 'chrome86',
       minify: 'terser',
+      assetsInlineLimit: 4096, // 小于4KB的资源内联
+      // 文件大小限制配置
+      chunkSizeWarningLimit: 500, // 500kb 警告提示
       terserOptions: {
         compress: {
           keep_infinity: true,
@@ -75,7 +84,6 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
           drop_debugger: VITE_DROP_DEBUGGER
         }
       },
-      chunkSizeWarningLimit: 2000,
       modulePreload: false,
       rollupOptions: {
         //viteExternalsPlugin会自动处理externals,注释掉
@@ -83,17 +91,26 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
         output: {
           // 强制拆分 chunk，使关键文件被标记为 preload
           manualChunks: {
-            vendor: ['react-router-dom', 'handsontable'], // 举例：提取第三方库
-          },
+            'vendor-react-dom': ['react-router-dom'],
+            // 将 Lodash 库的代码单独打包
+            'vendor-lodash': ['lodash-es'],
+            // 将组件库的代码打包
+            'vendor-antd': ['antd'],
+            'vendor-echarts': ['echarts'],
+            'vendor-editor': ['@wangeditor/editor'],
+            'vendor-handsontable': ['handsontable'],
+            'vendor-video': ['video.js'],
+            'vendor-xlsx': ['xlsx']
+          }
         },
-      },
+        treeshake: true
+        // 文件大小限制配置
+      }
     },
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src'),
+        '@': resolve(__dirname, './src')
       }
     }
   }
 })
-
-

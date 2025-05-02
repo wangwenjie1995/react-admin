@@ -1,7 +1,7 @@
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from './index.module.less'
 import { Spin } from "antd";
-import { debounce, throttle } from "lodash-es";
+import { throttle } from "lodash-es";
 interface WaterfallProps {
   columnCount?: number;
   gap?: number;
