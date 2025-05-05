@@ -75,6 +75,15 @@ const CompoRoute: RouteObject = {
         title: '瀑布流',
         key: 'waterfallDemo'
       }
+    },
+    {
+      path: 'pdf-demo',
+      name: 'PdfDemo',
+      element: LazyLoad(lazy(() => import('@/views/compo/pdfDemo'))),
+      meta: {
+        title: 'PDF',
+        key: 'pdfDemo'
+      }
     }
   ]
 }

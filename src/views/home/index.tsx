@@ -2,6 +2,7 @@ import { type FC, useEffect, useState, useRef } from 'react'
 import { Row, Col, Space, Flex, Card, Button } from 'antd'
 import CountUpCard from './components/CountUpCard'
 import ChartsCard from './components/ChartsCard'
+import Pdf from '@/components/Pdf/src'
 import { countUpData, pieOptions, ringOptions, radarOptions, barOptions, lineOptions } from './data'
 import { number } from 'echarts'
 

@@ -41,6 +41,7 @@
     "immer": "^10.0.3",
     "lodash-es": "^4.17.21",
     "mockjs": "^1.1.0",
+    "pdfjs-dist": "^5.2.133",
     "react": "^18.2.0",
     "react-countup": "^6.5.0",
     "react-cropper": "^2.3.3",
