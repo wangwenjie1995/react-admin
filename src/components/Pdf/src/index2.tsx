@@ -337,13 +337,13 @@ export default function Pdf(props: PdfProp) {
         {
           showAllPage ? (
             // 虚拟滚动占位符
-            pages.map(page => (
-              <div
-                key={page.number}
-                className="pdf-page-placeholder"
-                style={{ height: '1200px', marginBottom: '16px' }} // 根据实际高度调整
-              />
-            ))
+            // pages.map(page => (
+            <div
+              // key={page.number}
+              className="pdf-page-placeholder"
+              style={{ height: '1200px', marginBottom: '16px' }} // 根据实际高度调整
+            />
+            // ))
           ) : (<canvas
             key={pdfUrl}
             ref={canvasRef}

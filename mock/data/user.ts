@@ -76,9 +76,21 @@ export function createFakeUserList() {
               title: '瀑布流'
             },
             {
-              name: 'PdfDemo',
-              path: '/pdf-demo',
-              title: 'PDF'
+              name: 'Pdf',
+              title: 'PDF',
+              path: '/pdf',
+              children: [
+                {
+                  name: 'SinglePdf',
+                  title: '单页渲染/切换',
+                  path: '/single-pdf'
+                },
+                {
+                  name: 'AllPdf',
+                  title: '渲染全部',
+                  path: '/all-pdf'
+                }
+              ]
             }
           ]
         },

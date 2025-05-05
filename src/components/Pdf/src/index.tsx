@@ -203,7 +203,7 @@ export default function Pdf(props: PdfProp) {
         </span>
         <div className='space-x-2'>
           <Button onClick={handlePrevPage} disabled={currentPage <= 1}>上一页</Button>
-          <Button onClick={handleNextPage} disabled={currentPage >= pdfDoc!.numPages}>下一页</Button>
+          <Button onClick={handleNextPage}>下一页</Button>
           {showPrint && <Button onClick={handlePrint}>打印</Button>}
           {showDownload && <Button onClick={handleDownload}>下载</Button>}
         </div>
