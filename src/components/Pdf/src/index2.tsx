@@ -4,9 +4,14 @@ import { GlobalWorkerOptions, getDocument, RenderTask } from 'pdfjs-dist';
 //必须加上"?url"不然会报错
 //报错原因:PDF.js 5.x 版本对现代打包工具（如 Vite）的支持不完善
 //?url 后缀导入,通过 Vite 资源处理获取实际文件路径
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+// import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PDFDocumentProxy, RenderParameters } from 'pdfjs-dist/types/src/display/api';
+
+const pdfjsWorker = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString();
 
 // 设置 Worker 文件路径
 GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -159,7 +164,9 @@ export default function Pdf(props: PdfProp) {
     // 插入到正确位置
     const prevPage = container.querySelector(`[data-page="${pageNum - 1}"]`);
     if (prevPage) {
-      prevPage.after(pageContainer);
+      // prevPage.after(pageContainer);
+      // container.insertBefore(pageContainer, slots[insertIndex]);
+      container.appendChild(pageContainer);
     } else {
       container.prepend(pageContainer);
     }
@@ -316,7 +323,7 @@ export default function Pdf(props: PdfProp) {
   return (
     <div style={mergedStyle} className="relative w-full">
       <div className="flex justify-between items-center mb-1">
-        <span className="mx-2">
+        {/* <span className="mx-2">
           第 <span className='text-orange'>{currentPage}</span> 页
         </span>
         <div className='space-x-2'>
@@ -324,11 +331,11 @@ export default function Pdf(props: PdfProp) {
           <Button onClick={handleNextPage}>下一页</Button>
           {showPrint && <Button onClick={handlePrint}>打印</Button>}
           {showDownload && <Button onClick={handleDownload}>下载</Button>}
-        </div>
+        </div> */}
 
       </div>
-      {isLoading && <div>加载中...</div>}
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {/* {isLoading && <div>加载中...</div>}
+      {error && <div style={{ color: 'red' }}>{error}</div>} */}
       <div
         ref={containerRef}
         className="pdf-pages-container overflow-y-auto"
@@ -341,7 +348,7 @@ export default function Pdf(props: PdfProp) {
             <div
               // key={page.number}
               className="pdf-page-placeholder"
-              style={{ height: '1200px', marginBottom: '16px' }} // 根据实际高度调整
+              style={{ height: '0', marginBottom: '16px' }} // 根据实际高度调整
             />
             // ))
           ) : (<canvas

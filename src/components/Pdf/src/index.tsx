@@ -4,10 +4,14 @@ import { GlobalWorkerOptions, getDocument, RenderTask } from 'pdfjs-dist';
 //必须加上"?url"不然会报错
 //报错原因:PDF.js 5.x 版本对现代打包工具（如 Vite）的支持不完善
 //?url 后缀导入,通过 Vite 资源处理获取实际文件路径
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+// import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PDFDocumentProxy, RenderParameters } from 'pdfjs-dist/types/src/display/api';
 
+const pdfjsWorker = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString();
 // 设置 Worker 文件路径
 GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
