@@ -36,65 +36,7 @@ export default function Pdf(props: PdfProp) {
     width: style.width ?? width,
     height: style.height ?? height
   }
-  // 上一页
-  const handlePrevPage = () => {
-    currentPage > 1 && setCurrentPage(currentPage - 1);
-  }
-  // 下一页
-  const handleNextPage = () => {
-    pdfDoc && currentPage < pdfDoc.numPages && setCurrentPage(currentPage + 1);
-  }
 
-  // 打印PDF页面
-  const handlePrint = () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      // 创建隐藏的iframe
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-
-      // 将canvas内容转换位图片
-      const imgData = canvas.toDataURL('image/png');
-
-      const printDocument = iframe.contentWindow?.document;
-      if (printDocument) {
-        printDocument.open();
-        printDocument.write(`
-          <html>
-            <head>
-              <title>Print</title>
-            </head>
-            <body style="margin: 0;">
-              <img src="${imgData}" style="width: 100%; height: auto;" />
-            </body>
-          </html>
-        `);
-        printDocument.close();
-
-        // 延迟执行打印以确保内容加载
-        setTimeout(() => {
-          iframe.contentWindow?.print();
-          document.body.removeChild(iframe);
-        }, 500);
-      }
-    }
-  }
-  const handleDownload = () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      // 创建隐藏的iframe
-      const imgData = canvas.toDataURL('image/png');
-      const fileName = pdfUrl.split('/').pop()?.replace(/\.pdf$/i, '') || 'download';
-
-      const link = document.createElement('a');
-      link.download = `${fileName}.png`;
-      link.href = imgData;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }
   const renderAllPages = useCallback(async (pdf: PDFDocumentProxy) => {
     const totalPages = pdf.numPages;
     const initialPages = Array.from({ length: totalPages }, (_, i) => {
@@ -132,8 +74,7 @@ export default function Pdf(props: PdfProp) {
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          const pageNumber = parseInt((entry.target as HTMLElement).dataset.pageNumber || '1')
-
+          const pageNumber = parseInt((entry.target as HTMLElement).dataset.page || '1')
           const start = Math.max(0, pageNumber - preloadPages);
           const end = Math.min(totalPages, pageNumber + preloadPages + 1);
           processChunk(start, end);
@@ -152,23 +93,15 @@ export default function Pdf(props: PdfProp) {
     const existingCanvas = container.querySelector(`[data-page="${pageNum}"]`);
     if (existingCanvas) return;
 
-    // 创建canvas容器
-    const pageContainer = document.createElement('div');
-    pageContainer.className = 'pdf-page relative mb-4';
-    pageContainer.dataset.pageNumber = pageNum.toString();
-
     const canvas = document.createElement('canvas');
     canvas.dataset.page = pageNum.toString();
-    pageContainer.appendChild(canvas);
 
     // 插入到正确位置
     const prevPage = container.querySelector(`[data-page="${pageNum - 1}"]`);
     if (prevPage) {
-      // prevPage.after(pageContainer);
-      // container.insertBefore(pageContainer, slots[insertIndex]);
-      container.appendChild(pageContainer);
+      container.appendChild(canvas);
     } else {
-      container.prepend(pageContainer);
+      container.prepend(canvas);
     }
 
     // 原有渲染逻辑适配
@@ -178,6 +111,7 @@ export default function Pdf(props: PdfProp) {
 
       canvas.height = viewport.height;
       canvas.width = viewport.width;
+      canvas.style.width = '100%';
 
       const renderTask = page.render({
         canvasContext: canvas.getContext('2d')!,
@@ -185,83 +119,12 @@ export default function Pdf(props: PdfProp) {
       });
 
       await renderTask.promise;
-      observerRef.current?.observe(pageContainer);
+      observerRef.current?.observe(canvas);
     } catch (err) {
       console.error(`Page ${pageNum} render error:`, err);
-      pageContainer.remove();
+      canvas.remove();
     }
   }, []);
-  // const renderPage = useCallback((pageNum: number, pdf = pdfDoc) => {
-
-  //   // 1.取消之前的渲染任务
-  //   if (renderTaskRef.current) {
-  //     renderTaskRef.current.cancel();
-  //     renderTaskRef.current = null;
-  //   }
-  //   // 当前激活的控制器，防止无效渲染
-  //   // 可能是：
-  //   // - 前一页渲染未完成时的控制器
-  //   // - 其他中断操作的控制器
-  //   pageAbortControllerRef.current?.abort();
-  //   // 2. 创建新的中止控制器
-  //   const pageAbortController = new AbortController();
-  //   pageAbortControllerRef.current = pageAbortController;
-
-  //   //获取第一页(索引从 1 开始)
-  //   const canvas = canvasRef.current;
-
-  //   if (!canvas || !pdf || pageAbortController.signal.aborted) return;
-  //   const context = canvas.getContext('2d')!;
-  //   pdf!.getPage(pageNum).then((page) => {
-  //     if (pageAbortController.signal.aborted) {
-  //       page.cleanup();
-  //       return;
-  //     }
-
-  //     console.log(`Page ${pageNum} loaded`);
-  //     const scale = 1.5;
-  //     const viewport = page.getViewport({ scale });
-
-  //     //清除之前的画布内容
-  //     context?.clearRect(0, 0, canvas.width, canvas.height);
-
-  //     canvas.height = viewport.height;
-  //     canvas.width = viewport.width;
-  //     console.log('Canvas尺寸设置', canvas.width, 'x', canvas.height);
-
-  //     // 渲染PDF页面到canvas
-  //     const renderContext: RenderParameters = {
-  //       canvasContext: context,
-  //       viewport: viewport
-  //     }
-  //     renderTaskRef.current = page.render(renderContext); //这个过程也是异步的,也可以取消
-  //     renderTaskRef.current!.promise.then(() => {
-  //       if (pageAbortController.signal.aborted) return;
-  //       setIsLoading(false);
-  //     }).catch((renderError) => {
-  //       if (renderError.name === 'RenderingCancelledException') {
-  //         console.log('pageAbortController暂停，渲染已取消');
-  //         return;
-  //       }
-  //       setError('pdf页面渲染失败:' + renderError.message);
-  //     })
-  //   }).catch((error: {
-  //     name: string; message: string;
-  //   }) => {
-  //     if (error.name === 'AbortError') {
-  //       console.log('加载已取消');
-  //       return;
-  //     }
-  //     if (!pageAbortControllerRef.current!.signal.aborted) {
-  //       setError('PDF加载失败: ' + error.message);
-  //       console.error('Error loading PDF:', error);
-  //     }
-  //   }).finally(() => {
-  //     if (!pageAbortControllerRef.current!.signal.aborted) {
-  //       setIsLoading(false);
-  //     }
-  //   })
-  // }, [pdfDoc])
   useEffect(() => {
     if (pdfDoc) {
       if (showAllPage) {
@@ -316,7 +179,7 @@ export default function Pdf(props: PdfProp) {
 
       // 清理全页模式DOM
       if (containerRef.current) {
-        containerRef.current.querySelectorAll('.pdf-page').forEach(el => el.remove());
+        containerRef.current.querySelectorAll(':scope > [data-page]').forEach(el => el.remove());
       }
     };
   }, []);
@@ -334,29 +197,10 @@ export default function Pdf(props: PdfProp) {
         </div> */}
 
       </div>
-      {/* {isLoading && <div>加载中...</div>}
-      {error && <div style={{ color: 'red' }}>{error}</div>} */}
       <div
         ref={containerRef}
         className="pdf-pages-container overflow-y-auto"
-        style={{ height: 'calc(100% - 32px)' }}
       >
-        {
-          showAllPage ? (
-            // 虚拟滚动占位符
-            // pages.map(page => (
-            <div
-              // key={page.number}
-              className="pdf-page-placeholder"
-              style={{ height: '0', marginBottom: '16px' }} // 根据实际高度调整
-            />
-            // ))
-          ) : (<canvas
-            key={pdfUrl}
-            ref={canvasRef}
-            style={{ width: '100%', height: '100%' }}
-          ></canvas>)
-        }
       </div>
     </div >
   )

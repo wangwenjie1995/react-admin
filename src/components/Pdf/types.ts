@@ -1,8 +1,8 @@
 export interface PdfProp {
   pdfUrl: string
   initialPage?: number
-  width?: number | string
-  height?: number | string
+  width?: string
+  height?: string
   style?: React.CSSProperties
   showPrint?: boolean
   showDownload?: boolean

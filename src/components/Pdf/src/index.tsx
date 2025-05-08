@@ -5,7 +5,7 @@ import { GlobalWorkerOptions, getDocument, RenderTask } from 'pdfjs-dist';
 //报错原因:PDF.js 5.x 版本对现代打包工具（如 Vite）的支持不完善
 //?url 后缀导入,通过 Vite 资源处理获取实际文件路径
 // import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PDFDocumentProxy, RenderParameters } from 'pdfjs-dist/types/src/display/api';
 
 const pdfjsWorker = new URL(
@@ -16,7 +16,7 @@ const pdfjsWorker = new URL(
 GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export default function Pdf(props: PdfProp) {
-  const { pdfUrl, width = '100%', height = '500px', showDownload = true, showPrint = true, style = {}, initialPage = 1, showAllPage = false, preloadPages = 3 } = props
+  const { pdfUrl, width = '100%', height = '100%', showDownload = true, showPrint = true, style = {}, initialPage = 1, showAllPage = false, preloadPages = 3 } = props
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +25,12 @@ export default function Pdf(props: PdfProp) {
   // 使用 useRef 保存渲染任务和控制器的引用
   const renderTaskRef = useRef<RenderTask | null>(null);
   const pageAbortControllerRef = useRef<AbortController | null>(null); //用来控制pdf page页面渲染的控制器
+  const isLastPage = useMemo(() => {
+    if (pdfDoc) {
+      return currentPage >= pdfDoc.numPages
+    }
+    return false
+  }, [currentPage])
 
   const mergedStyle: React.CSSProperties = {
     ...style,
@@ -127,6 +133,8 @@ export default function Pdf(props: PdfProp) {
 
       canvas.height = viewport.height;
       canvas.width = viewport.width;
+      // canvas.style.width = width;
+      // canvas.style.height = height;
       console.log('Canvas尺寸设置', canvas.width, 'x', canvas.height);
 
       // 渲染PDF页面到canvas
@@ -207,7 +215,7 @@ export default function Pdf(props: PdfProp) {
         </span>
         <div className='space-x-2'>
           <Button onClick={handlePrevPage} disabled={currentPage <= 1}>上一页</Button>
-          <Button onClick={handleNextPage}>下一页</Button>
+          <Button onClick={handleNextPage} disabled={isLastPage}>下一页</Button>
           {showPrint && <Button onClick={handlePrint}>打印</Button>}
           {showDownload && <Button onClick={handleDownload}>下载</Button>}
         </div>
@@ -218,7 +226,7 @@ export default function Pdf(props: PdfProp) {
       <canvas
         key={pdfUrl}
         ref={canvasRef}
-        style={{ width: '100%', height: 'calc(100% - 32px)' }}
+        style={{ height: 'calc(100% - 32px)' }}
       >
       </canvas>
     </div >
