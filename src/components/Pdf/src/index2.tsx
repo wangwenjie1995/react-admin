@@ -7,6 +7,7 @@ import { GlobalWorkerOptions, getDocument, RenderTask } from 'pdfjs-dist';
 // import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PDFDocumentProxy, RenderParameters } from 'pdfjs-dist/types/src/display/api';
+import { addDynamicPageNumber, addDynamicWatermark } from '@/utils/canvas';
 
 const pdfjsWorker = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -17,7 +18,7 @@ const pdfjsWorker = new URL(
 GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export default function Pdf(props: PdfProp) {
-  const { pdfUrl, width = '100%', height = '500px', showDownload = true, showPrint = true, style = {}, initialPage = 1, showAllPage = true, preloadPages = 3, chunkSize = 5, } = props
+  const { pdfUrl, width = '100%', height = '500px', showDownload = true, showPrint = true, style = {}, initialPage = 1, showAllPage = true, preloadPages = 2, chunkSize = 3, waterMarkText = '', loadAll = false } = props
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pages, setPages] = useState<PdfPage[]>([])
   const idleCallbackRef = useRef<number>();
@@ -30,12 +31,89 @@ export default function Pdf(props: PdfProp) {
   // 使用 useRef 保存渲染任务和控制器的引用
   const renderTaskRef = useRef<RenderTask | null>(null);
   const pageAbortControllerRef = useRef<AbortController | null>(null); //用来控制pdf page页面渲染的控制器
+  // 在组件内添加状态跟踪
+  const [renderedPages, setRenderedPages] = useState<Set<number>>(new Set());
+  const [allPagesRendered, setAllPagesRendered] = useState(false);
 
   const mergedStyle: React.CSSProperties = {
     ...style,
     width: style.width ?? width,
     height: style.height ?? height
   }
+  const handlePrint = async () => {
+    if (!containerRef.current) return;
+    const canvases = Array.from(containerRef.current.querySelectorAll('canvas'));
+    if (canvases.length === 0) return;
+
+    // // 异步转换所有 Canvas
+    const printHTML = await Promise.all(
+      canvases.map(canvas =>
+        new Promise<string>(resolve => {
+          const img = new Image();
+          img.onload = () => resolve(
+            `<div style="page-break-inside: avoid;">
+              <img src="${img.src}" style="width: 100%; height: auto;">
+            </div>`
+          );
+          img.src = canvas.toDataURL('image/png');
+        })
+      )
+    ).then(htmlParts => htmlParts.join(''));
+
+    // 将canvas内容转换位图片
+    // const printHTML = canvases.reduce((prev, cur) => {
+    //   const imgDataURL = cur.toDataURL('image/png');
+    //   const imgStr = `<img src="${imgDataURL}" style="width: 100%; height: auto;" />`
+    //   return prev + imgStr
+    // }, '')
+    // 创建隐藏的iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const printDocument = iframe.contentWindow?.document;
+    if (printDocument) {
+      printDocument.open();
+      printDocument.write(`
+          <html>
+            <head>
+              <title>内部专用,禁止转载</title>
+              <style>
+              /* 打印样式 */
+              @media print {
+                /* 保留基础页边距 */
+                @page {
+                  size: auto;
+                  margin: 0;
+                }
+
+                /* 防止图片分页 */
+                div {
+                  page-break-inside: avoid;
+                  margin-bottom: 10mm;
+                }
+                img {
+                  width: 100% !important;
+                  height: auto !important;
+                  max-width: none !important;
+                }
+              }
+            </style>
+            </head>
+            <body style="margin: 0;">
+              ${printHTML}
+            </body>
+          </html>
+        `);
+      printDocument.close();
+
+      // 延迟执行打印以确保内容加载
+      setTimeout(() => {
+        iframe.contentWindow?.print();
+        document.body.removeChild(iframe);
+      }, 500);
+    }
+  };
 
   const renderAllPages = useCallback(async (pdf: PDFDocumentProxy) => {
     const totalPages = pdf.numPages;
@@ -66,6 +144,10 @@ export default function Pdf(props: PdfProp) {
         })
       }
     }
+    if (loadAll) {
+      processChunk(0, totalPages)
+      return
+    }
     processChunk(0, chunkSize)
 
     // 初始化Intersection Observer
@@ -76,7 +158,7 @@ export default function Pdf(props: PdfProp) {
         if (entry.isIntersecting) {
           const pageNumber = parseInt((entry.target as HTMLElement).dataset.page || '1')
           const start = Math.max(0, pageNumber - preloadPages);
-          const end = Math.min(totalPages, pageNumber + preloadPages + 1);
+          const end = Math.min(totalPages, pageNumber + preloadPages);
           processChunk(start, end);
         }
       }, { root: containerRef.current, rootMargin: '200px 0' })
@@ -84,6 +166,7 @@ export default function Pdf(props: PdfProp) {
 
 
   }, [chunkSize, preloadPages])
+
   // 修改后的渲染方法
   const renderPage = useCallback(async (pageNum: number, pdf: PDFDocumentProxy) => {
     // 创建独立canvas
@@ -108,23 +191,43 @@ export default function Pdf(props: PdfProp) {
     try {
       const page = await pdf.getPage(pageNum);
       const viewport = page.getViewport({ scale: 1.5 });
+      const totalPages = pdf.numPages;
 
       canvas.height = viewport.height;
       canvas.width = viewport.width;
       canvas.style.width = '100%';
-
+      const ctx = canvas.getContext('2d')!;
       const renderTask = page.render({
-        canvasContext: canvas.getContext('2d')!,
+        canvasContext: ctx,
         viewport
       });
 
       await renderTask.promise;
+
+      addDynamicPageNumber(ctx, pageNum, totalPages)
+      addDynamicWatermark(ctx, waterMarkText);
+      // 渲染完成后更新状态
+      setRenderedPages(prev => {
+        const newSet = new Set(prev).add(pageNum);
+        if (!allPagesRendered && newSet.size === pdf.numPages) {
+          setAllPagesRendered(true);
+          props.onAllPagesRendered?.();
+        }
+        return newSet;
+      });
       observerRef.current?.observe(canvas);
     } catch (err) {
       console.error(`Page ${pageNum} render error:`, err);
       canvas.remove();
     }
-  }, []);
+  }, [pdfDoc?.numPages, props.onAllPagesRendered]);
+  // 添加全局状态检查（双重保障）
+  useEffect(() => {
+    if (pdfDoc && !allPagesRendered && renderedPages.size === pdfDoc.numPages) {
+      setAllPagesRendered(true);
+      props.onAllPagesRendered?.();
+    }
+  }, [renderedPages, pdfDoc, allPagesRendered]);
   useEffect(() => {
     if (pdfDoc) {
       if (showAllPage) {
@@ -184,24 +287,17 @@ export default function Pdf(props: PdfProp) {
     };
   }, []);
   return (
-    <div style={mergedStyle} className="relative w-full">
-      <div className="flex justify-between items-center mb-1">
-        {/* <span className="mx-2">
-          第 <span className='text-orange'>{currentPage}</span> 页
-        </span>
-        <div className='space-x-2'>
-          <Button onClick={handlePrevPage} disabled={currentPage <= 1}>上一页</Button>
-          <Button onClick={handleNextPage}>下一页</Button>
-          {showPrint && <Button onClick={handlePrint}>打印</Button>}
-          {showDownload && <Button onClick={handleDownload}>下载</Button>}
-        </div> */}
-
+    <div style={mergedStyle} className="relative h-full w-full overflow-y-auto">
+      <div className="sticky top-1 right-0 flex justify-end items-center mb-1 mr-1">
+        {showPrint && allPagesRendered && <Button onClick={handlePrint}>打印</Button>}
       </div>
       <div
         ref={containerRef}
-        className="pdf-pages-container overflow-y-auto"
+        className="pdf-pages-container"
       >
       </div>
     </div >
   )
 }
+
+

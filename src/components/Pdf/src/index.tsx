@@ -7,6 +7,7 @@ import { GlobalWorkerOptions, getDocument, RenderTask } from 'pdfjs-dist';
 // import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PDFDocumentProxy, RenderParameters } from 'pdfjs-dist/types/src/display/api';
+import { addDynamicWatermark } from '@/utils/canvas';
 
 const pdfjsWorker = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -16,7 +17,7 @@ const pdfjsWorker = new URL(
 GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export default function Pdf(props: PdfProp) {
-  const { pdfUrl, width = '100%', height = '100%', showDownload = true, showPrint = true, style = {}, initialPage = 1, showAllPage = false, preloadPages = 3 } = props
+  const { pdfUrl, width = '100%', height = '100%', showDownload = true, showPrint = true, style = {}, initialPage = 1, showAllPage = false, preloadPages = 3, waterMarkText = '' } = props
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +134,7 @@ export default function Pdf(props: PdfProp) {
 
       canvas.height = viewport.height;
       canvas.width = viewport.width;
-      // canvas.style.width = width;
+      canvas.style.width = width;
       // canvas.style.height = height;
       console.log('Canvas尺寸设置', canvas.width, 'x', canvas.height);
 
@@ -145,6 +146,7 @@ export default function Pdf(props: PdfProp) {
       renderTaskRef.current = page.render(renderContext); //这个过程也是异步的,也可以取消
       renderTaskRef.current!.promise.then(() => {
         if (pageAbortController.signal.aborted) return;
+        // addDynamicWatermark(context, waterMarkText);
         setIsLoading(false);
       }).catch((renderError) => {
         if (renderError.name === 'RenderingCancelledException') {
