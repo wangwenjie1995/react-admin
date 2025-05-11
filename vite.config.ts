@@ -7,6 +7,7 @@ import { viteMockServe } from 'vite-plugin-mock'
 import ViteCdnImport from 'vite-plugin-cdn-import'
 import { viteExternalsPlugin } from 'vite-plugin-externals'
 import { visualizer } from 'rollup-plugin-visualizer'
+import { webUpdateNotice } from '@plugin-web-update-notification/vite'
 import { wrapperEnv } from './build/utils'
 import cdnConfigs from './cdn.config'
 // 需要安装 @typings/node 插件
@@ -45,6 +46,9 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
     // },
     plugins: [
       react(),
+      webUpdateNotice({
+        logVersion: true
+      }),
       ViteCdnImport({
         modules: cdnConfigs.map(item => item)
       }),
@@ -63,11 +67,11 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
           setupProdMockServer()
           `
       }),
-      isBuild && viteExternalsPlugin(cdnConfigsObj),
-      visualizer({
-        filename: 'state.html',
-        open: true //如果存在本地服务端口，将在打包后自动展示
-      })
+      isBuild && viteExternalsPlugin(cdnConfigsObj)
+      // visualizer({
+      //   filename: 'state.html',
+      //   open: true //如果存在本地服务端口，将在打包后自动展示
+      // })
     ].filter(Boolean),
     build: {
       target: 'es2015',

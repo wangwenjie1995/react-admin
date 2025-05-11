@@ -141,6 +141,9 @@ importers:
       '@handsontable/react-wrapper':
         specifier: ^15.0.0
         version: 15.3.0(handsontable@15.3.0)
+      '@plugin-web-update-notification/vite':
+        specifier: ^2.0.0
+        version: 2.0.0(vite@5.4.19(@types/node@20.17.32)(less@4.3.0)(terser@5.39.0))
       '@types/crypto-js':
         specifier: ^4.2.1
         version: 4.2.2
@@ -1141,6 +1144,14 @@ packages:
   '@pkgr/core@0.2.4':
     resolution: {integrity: sha512-ROFF39F6ZrnzSUEmQQZUar0Jt4xVoP9WnDRdWwF4NNcXs3xBTLgBUDoOwW141y1jP+S8nahIbdxbFC7IShw9Iw==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
+
+  '@plugin-web-update-notification/core@2.0.0':
+    resolution: {integrity: sha512-xxtEtTkFHX59iKm6NxCeyA2vZNA8nM+RjmuPC+jc2JAuhR9oGlmWHrlzXM64bu6NxZuQ5W52+sZKUsQUnDLh/g==}
+
+  '@plugin-web-update-notification/vite@2.0.0':
+    resolution: {integrity: sha512-pytuDfqUmFhJkysiH05BHYs56/7+0ikSQETADqT8S3Zu4j9N+ENEVB0Z2myTRw5FuI3zVLmt/pLXH9EAWYZ2CQ==}
+    peerDependencies:
+      vite: ^6.0.0 || ^5.0.0 || >4.0.0 || ^3.0.0
 
   '@protobufjs/aspromise@1.1.2':
     resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
@@ -7677,6 +7688,13 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.2.4': {}
+
+  '@plugin-web-update-notification/core@2.0.0': {}
+
+  '@plugin-web-update-notification/vite@2.0.0(vite@5.4.19(@types/node@20.17.32)(less@4.3.0)(terser@5.39.0))':
+    dependencies:
+      '@plugin-web-update-notification/core': 2.0.0
+      vite: 5.4.19(@types/node@20.17.32)(less@4.3.0)(terser@5.39.0)
 
   '@protobufjs/aspromise@1.1.2': {}
 
