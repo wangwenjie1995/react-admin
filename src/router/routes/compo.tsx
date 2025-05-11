@@ -76,33 +76,7 @@ const CompoRoute: RouteObject = {
         key: 'waterfallDemo'
       }
     },
-    {
-      path: 'pdf',
-      name: 'Pdf',
-      meta: {
-        title: 'PDF'
-      },
-      children: [
-        {
-          path: 'single-pdf',
-          name: 'SinglePdf',
-          element: LazyLoad(lazy(() => import('@/views/compo/pdfDemo'))),
-          meta: {
-            title: '单页切换/渲染',
-            key: 'singlePdf'
-          }
-        },
-        {
-          path: 'all-pdf',
-          name: 'AllPdf',
-          element: LazyLoad(lazy(() => import('@/views/compo/pdfDemo2'))),
-          meta: {
-            title: '渲染全部',
-            key: 'allPdf'
-          }
-        }
-      ]
-    },
+
   ]
 }
 
