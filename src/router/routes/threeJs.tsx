@@ -4,27 +4,27 @@ import { LayoutGuard } from '../guard'
 import { LazyLoad } from '@/components/LazyLoad'
 
 // component module page
-const DrawRoute: RouteObject = {
-  path: '/cesium',
-  name: 'Cesium',
+const ThreeJsRoute: RouteObject = {
+  path: '/threeJs',
+  name: 'ThreeJs',
   element: <LayoutGuard />,
   meta: {
-    title: 'Cesium',
-    icon: 'cesium',
+    title: 'ThreeJs',
+    icon: 'threeJs',
     orderNo: 6
   },
   children: [
     {
-      path: 'cesium-map',
-      name: 'CesiumMap',
-      element: LazyLoad(lazy(() => import('@/views/cesium'))),
+      path: 'gobang',
+      name: 'Gobang',
+      element: LazyLoad(lazy(() => import('@/views/gobang3D'))),
       meta: {
-        title: 'CesiumMap',
-        key: 'cesiumMap'
+        title: 'Gobang',
+        key: 'gobang'
       }
     },
   ]
 }
 
-export default DrawRoute
+export default ThreeJsRoute
 

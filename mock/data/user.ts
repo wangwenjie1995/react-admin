@@ -34,6 +34,18 @@ export function createFakeUserList() {
           ]
         },
         {
+          name: 'ThreeJs',
+          title: 'ThreeJs',
+          path: '/threeJs',
+          children: [
+            {
+              name: 'Gobang',
+              path: '/gobang',
+              title: '五子棋'
+            }
+          ]
+        },
+        {
           name: 'Compo',
           title: '组件',
           path: '/compo',

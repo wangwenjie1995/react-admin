@@ -35,10 +35,12 @@ const LayoutTags: FC = () => {
   const onClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'all') {
       // @ts-ignore
-      closeAllTags().then(({ payload }) => {
+      closeAllTags().then((payload) => {
         const lastTag = payload.slice(-1)[0]
-        if (activeTag !== lastTag?.fullPath) {
-          navigate(lastTag?.fullPath)
+        // 定义默认导航目标
+        const targetPath = lastTag?.fullPath ?? '/';
+        if (activeTag !== targetPath) {
+          navigate(targetPath)
         }
       })
     } else {
@@ -163,7 +165,7 @@ const LayoutTags: FC = () => {
 
   const handleCloseTag = (path: string) => {
     // @ts-ignore
-    closeTagByKey(path).then(({ payload }) => {
+    closeTagByKey(path).then((payload) => {
       let currTag: RouteObject
       const { tagIndex, tagsList } = payload
       const tagLen = tagsList.length
