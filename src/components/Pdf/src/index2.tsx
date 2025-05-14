@@ -246,12 +246,7 @@ export default function Pdf(props: PdfProp) {
     setIsLoading(true);
     setError(null);
 
-    const loadingTask = getDocument({
-      url: pdfUrl,
-      rangeChunkSize: 65536, // 64KB
-      disableAutoFetch: true,
-      disableStream: false,
-    });
+    const loadingTask = getDocument(pdfUrl);
     loadingTask.promise.then((pdfDoc) => {
       // 如果组件已经被卸载或取消了加载任务,则直接退出,避免继续执行无意义的操作;
       if (docAbortController.signal.aborted) return;
