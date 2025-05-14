@@ -12,11 +12,11 @@ const waterfallDemo: React.FC = () => {
         <div className="flex h-full space-x-4">
           <div className="flex-1 text-center text-lg">
             IntersectionObserver分页加载
-            <Pdf initialPage={1} pdfUrl={"/pdf/pdf.pdf"} waterMarkText={userInfo!.username} height={"100%"} loadAll={false}></Pdf>
+            <Pdf initialPage={1} pdfUrl={"/pdfs/pdf.pdf"} waterMarkText={userInfo!.username} height={"100%"} loadAll={false}></Pdf>
           </div>
           <div className="flex-1 text-center text-lg">
             一次性加载所有页面
-            <Pdf initialPage={1} pdfUrl={"/pdf/pdf.pdf"} waterMarkText={userInfo!.username} height={"100%"} loadAll={true}></Pdf>
+            <Pdf initialPage={1} pdfUrl={"/pdfs/pdf.pdf"} waterMarkText={userInfo!.username} height={"100%"} loadAll={true}></Pdf>
           </div>
         </div>
       </div>
