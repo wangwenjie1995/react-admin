@@ -13,7 +13,7 @@ const waterfallDemo: React.FC = () => {
         </Row>
       </div> */}
       <div className={'layout-container'} ref={containerRef}>
-        <Pdf initialPage={1} pdfUrl={"https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf"} height={"100%"}></Pdf>
+        <Pdf initialPage={1} pdfUrl={"/pdf/pdf.pdf"} height={"100%"}></Pdf>
       </div>
     </div>
   )
