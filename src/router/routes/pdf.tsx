@@ -31,6 +31,15 @@ const CompoRoute: RouteObject = {
         title: '渲染全部',
         key: 'allPdf'
       }
+    },
+    {
+      path: 'range-pdf',
+      name: 'RangePdf',
+      element: LazyLoad(lazy(() => import('@/views/compo/pdfDemo3'))),
+      meta: {
+        title: '分页加载',
+        key: 'rangePdf'
+      }
     }
   ]
 }

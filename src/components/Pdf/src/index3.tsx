@@ -34,44 +34,18 @@ export default function Pdf(props: PdfProp) {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pages, setPages] = useState<PdfPage[]>([]);
   const [renderedPages, setRenderedPages] = useState<Set<number>>(new Set());
-  const [allPagesRendered, setAllPagesRendered] = useState(false);
+  // 在组件顶层添加 ref 跟踪最新请求
+  const docAbortControllerRef = useRef<AbortController>();
+  // 使用 ref 跟踪渲染状态
+  const renderingPagesRef = useRef(new Set<number>());
 
-  // 合并后的统一加载方法
-  const initializePdf = useCallback(async (pdf: PDFDocumentProxy) => {
-    const total = pdf.numPages;
-
-    // 初始化页面状态
-    setPages(Array.from({ length: total }, (_, i) => ({
-      number: i + 1,
-      status: 'pending' as PageStatus
-    })));
-
-    // 创建预占位canvas
-    const container = containerRef.current!;
-    container.innerHTML = '';
-    Array.from({ length: total }).forEach((_, i) => {
-      const canvas = document.createElement('canvas');
-      canvas.dataset.page = `${i + 1}`;
-      canvas.style.width = '100%';
-      canvas.style.visibility = 'hidden'; // 初始隐藏
-      container.appendChild(canvas);
-    });
-
-    // 初始化分块加载（首屏优化）
-    loadChunk(1, Math.min(chunkSize, total));
-
-    // 初始化Observer（滚动加载）
-    initIntersectionObserver(pdf);
-  }, [chunkSize]);
   const renderPage = useCallback(async (pageNum: number, pdfDoc: PDFDocumentProxy) => {
     try {
       // 防御性检查（多层校验）
-      console.log('333333333333')
       if (!pdfDoc || !containerRef.current) {
         console.warn('PDF document not ready or container missing');
         return;
       }
-      console.log('2222222222222')
       const page = await pdfDoc.getPage(pageNum);
       const viewport = page.getViewport({ scale: 1.5 });
       const canvas = containerRef.current!.querySelector(
@@ -107,11 +81,9 @@ export default function Pdf(props: PdfProp) {
     requestIdleCallback(() => {
       for (let i = start; i <= end; i++) {
         if (renderedPages.has(i)) continue;
-
         setPages(prev => prev.map(p =>
           p.number === i ? { ...p, status: 'rendering' } : p
         ));
-
         renderPage(i, pdfDoc!).finally(() => {
           setPages(prev => prev.map(p =>
             p.number === i ? { ...p, status: 'done' } : p
@@ -120,34 +92,6 @@ export default function Pdf(props: PdfProp) {
       }
     });
   }, [renderedPages, pdfDoc]);
-  // 优化的Observer逻辑
-  const initIntersectionObserver = useCallback((pdf: PDFDocumentProxy) => {
-    observerRef.current?.disconnect();
-
-    observerRef.current = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-
-        const pageNum = parseInt((entry.target as HTMLElement).dataset.page!);
-        const start = Math.max(1, pageNum - preloadPages);
-        const end = Math.min(pdf.numPages, pageNum + preloadPages);
-
-        loadChunk(start, end);
-      });
-    }, {
-      root: containerRef.current,
-      rootMargin: '200px 0px',
-      threshold: 0.1
-    });
-
-    // 只观察未渲染的页面
-    containerRef.current!.querySelectorAll('canvas').forEach(canvas => {
-      if (!renderedPages.has(Number(canvas.dataset.page))) {
-        observerRef.current!.observe(canvas);
-      }
-    });
-  }, [preloadPages, renderedPages]);
-
 
   // 给每页预生成 canvas 占位，并注册 Observer
   useEffect(() => {
@@ -177,8 +121,7 @@ export default function Pdf(props: PdfProp) {
       const c = document.createElement('canvas');
       c.dataset.page = `${i}`;
       c.style.width = '100%';
-      c.style.height = '20';
-      c.height = 0;       // 占位高度
+      c.style.minHeight = '50px';
       container.appendChild(c);
       observerRef.current.observe(c);
     }
@@ -186,7 +129,7 @@ export default function Pdf(props: PdfProp) {
 
   // 真正的按需加载并渲染页
   const loadAndRender = useCallback((pageNum: number) => {
-    if (!pdfDoc || renderedPages.has(pageNum)) return;
+    if (!pdfDoc || renderedPages.has(pageNum) || renderingPagesRef.current.has(pageNum)) return;
 
     // 标记状态为 rendering
     setPages(ps => ps.map(p =>
@@ -195,9 +138,8 @@ export default function Pdf(props: PdfProp) {
 
     // 空闲时渲染
     idleCallbackRef.current = requestIdleCallback(async () => {
+      console.log('idleCallbackRef = renderPage ', pageNum)
       renderPage(pageNum, pdfDoc).finally(() => {
-        // initialPages[pageNum].status = 'done';
-        // setPages([...initialPages])
         setPages(ps => ps.map(p =>
           p.number === pageNum ? { ...p, status: 'done' } : p
         ));
@@ -207,7 +149,11 @@ export default function Pdf(props: PdfProp) {
   // 初始化 Range 加载
   useEffect(() => {
     if (!pdfUrl) return;
-    let docAbortController = new AbortController();
+
+    // 每次新请求前取消旧请求
+    docAbortControllerRef.current?.abort();
+    docAbortControllerRef.current = new AbortController();
+
     const loadingTask = getDocument({
       url: pdfUrl,
       rangeChunkSize: 64 * 1024,  // 每次 64KB
@@ -217,22 +163,19 @@ export default function Pdf(props: PdfProp) {
 
     loadingTask.promise.then(pdf => {
       // 如果组件已经被卸载或取消了加载任务,则直接退出,避免继续执行无意义的操作;
-      if (docAbortController.signal.aborted) return;
+      if (docAbortControllerRef.current?.signal.aborted) return;
       setPdfDoc(pdf);
-      console.log('PDF loaded');
       // 创建状态页数据
       setPages(Array.from({ length: pdf.numPages }, (_, i) => ({
         number: i + 1,
         status: 'pending' as PageStatus,
       })));
-      // initializePdf(pdf);
     }).catch(err => {
       console.error('PDF load error', err);
     });
-    console.log('componentWillMount')
     return () => {
-      docAbortController.abort();
-      if (loadingTask?.destroy && !docAbortController.signal.aborted) {
+      docAbortControllerRef.current?.abort();
+      if (loadingTask?.destroy && !docAbortControllerRef.current?.signal.aborted) {
         loadingTask.destroy();
       }
       if (idleCallbackRef.current) cancelIdleCallback(idleCallbackRef.current);
@@ -245,11 +188,6 @@ export default function Pdf(props: PdfProp) {
       style={{ width, height, overflowY: 'auto', ...style }}
       className="pdf-pages-container"
     >
-      {showPrint && allPagesRendered && (
-        <div className="sticky top-0 right-0 p-2 bg-white">
-          {/* <Button onClick={props.onPrint}>打印</Button> */}
-        </div>
-      )}
     </div>
   );
 }

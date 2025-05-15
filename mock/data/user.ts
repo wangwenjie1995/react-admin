@@ -103,6 +103,11 @@ export function createFakeUserList() {
               name: 'AllPdf',
               title: '渲染全部',
               path: '/all-pdf'
+            },
+            {
+              name: 'RangePdf',
+              title: '分页加载',
+              path: '/range-pdf'
             }
           ]
         },
