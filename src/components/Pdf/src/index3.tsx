@@ -157,8 +157,9 @@ export default function Pdf(props: PdfProp) {
     const loadingTask = getDocument({
       url: pdfUrl,
       rangeChunkSize: 64 * 1024,  // 每次 64KB
-      disableStream: true,        // 关闭自动流式加载
-      disableAutoFetch: true,     // 关闭预取
+      disableStream: true,           // 开启流式加载支持;分页关键，是否禁用流的形式加载
+      disableAutoFetch: true,         // 不预取
+      disableRange: false,            // 明确启用 Range 请求
     });
 
     loadingTask.promise.then(pdf => {
