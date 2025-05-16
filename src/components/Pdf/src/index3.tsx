@@ -34,10 +34,6 @@ export default function Pdf(props: PdfProp) {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pages, setPages] = useState<PdfPage[]>([]);
   const [renderedPages, setRenderedPages] = useState<Set<number>>(new Set());
-  // 在组件顶层添加 ref 跟踪最新请求
-  const docAbortControllerRef = useRef<AbortController>();
-  // 使用 ref 跟踪渲染状态
-  const renderingPagesRef = useRef(new Set<number>());
 
   const renderPage = useCallback(async (pageNum: number, pdfDoc: PDFDocumentProxy) => {
     try {
@@ -129,7 +125,7 @@ export default function Pdf(props: PdfProp) {
 
   // 真正的按需加载并渲染页
   const loadAndRender = useCallback((pageNum: number) => {
-    if (!pdfDoc || renderedPages.has(pageNum) || renderingPagesRef.current.has(pageNum)) return;
+    if (!pdfDoc || renderedPages.has(pageNum)) return;
 
     // 标记状态为 rendering
     setPages(ps => ps.map(p =>
@@ -149,22 +145,18 @@ export default function Pdf(props: PdfProp) {
   // 初始化 Range 加载
   useEffect(() => {
     if (!pdfUrl) return;
-
-    // 每次新请求前取消旧请求
-    docAbortControllerRef.current?.abort();
-    docAbortControllerRef.current = new AbortController();
-
+    let docAbortController = new AbortController();
     const loadingTask = getDocument({
       url: pdfUrl,
       rangeChunkSize: 64 * 1024,  // 每次 64KB
-      disableStream: true,           // 开启流式加载支持;分页关键，是否禁用流的形式加载
-      disableAutoFetch: true,         // 不预取
-      disableRange: false,            // 明确启用 Range 请求
+      disableStream: true,        // 关闭自动流式加载
+      disableAutoFetch: true,     // 关闭预取
+      disableRange: false,
     });
 
     loadingTask.promise.then(pdf => {
       // 如果组件已经被卸载或取消了加载任务,则直接退出,避免继续执行无意义的操作;
-      if (docAbortControllerRef.current?.signal.aborted) return;
+      if (docAbortController.signal.aborted) return;
       setPdfDoc(pdf);
       // 创建状态页数据
       setPages(Array.from({ length: pdf.numPages }, (_, i) => ({
@@ -175,8 +167,8 @@ export default function Pdf(props: PdfProp) {
       console.error('PDF load error', err);
     });
     return () => {
-      docAbortControllerRef.current?.abort();
-      if (loadingTask?.destroy && !docAbortControllerRef.current?.signal.aborted) {
+      docAbortController.abort();
+      if (loadingTask?.destroy && !docAbortController.signal.aborted) {
         loadingTask.destroy();
       }
       if (idleCallbackRef.current) cancelIdleCallback(idleCallbackRef.current);
